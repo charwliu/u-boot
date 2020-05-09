@@ -1707,6 +1707,24 @@ static const struct eqos_config __maybe_unused eqos_stm32_config = {
 	.ops = &eqos_stm32_ops
 };
 
+struct eqos_ops eqos_rockchip_ops = {
+        .eqos_inval_desc = eqos_inval_desc_generic,
+        .eqos_flush_desc = eqos_flush_desc_generic,
+        .eqos_inval_buffer = eqos_inval_buffer_generic,
+        .eqos_flush_buffer = eqos_flush_buffer_generic,
+        .eqos_probe_resources = eqos_probe_resources_stm32,
+        .eqos_remove_resources = eqos_remove_resources_stm32,
+        .eqos_stop_resets = eqos_null_ops,
+        .eqos_start_resets = eqos_null_ops,
+        .eqos_stop_clks = eqos_stop_clks_stm32,
+        .eqos_start_clks = eqos_start_clks_stm32,
+        .eqos_calibrate_pads = eqos_null_ops,
+        .eqos_disable_calibration = eqos_null_ops,
+        .eqos_set_tx_clk_speed = eqos_null_ops,
+        .eqos_get_enetaddr = eqos_null_ops,
+        .eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_stm32
+};
+
 static const struct udevice_id eqos_ids[] = {
 #if IS_ENABLED(CONFIG_DWC_ETH_QOS_TEGRA186)
 	{

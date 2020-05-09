@@ -3,6 +3,9 @@
  * Copyright 2022 NXP
  */
 
+#ifndef _DWC_ETH_QOS_H
+#define _DWC_ETH_QOS_H
+
 #include <phy_interface.h>
 #include <linux/bitops.h>
 #include <asm/gpio.h>
@@ -300,3 +303,6 @@ int eqos_write_hwaddr(struct udevice *dev);
 
 extern struct eqos_config eqos_imx_config;
 extern struct eqos_config eqos_qcom_config;
+extern struct eqos_ops eqos_rockchip_ops;
+
+#endif
