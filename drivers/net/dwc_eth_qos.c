@@ -45,7 +45,6 @@
 #include <reset.h>
 #include <wait_bit.h>
 #include <asm/cache.h>
-#include <asm/gpio.h>
 #include <asm/io.h>
 #ifdef CONFIG_ARCH_IMX8M
 #include <asm/arch/clock.h>
