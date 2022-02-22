@@ -10,6 +10,7 @@
 #include <asm/arch-rockchip/bootrom.h>
 #include <asm/arch-rockchip/grf_rk3568.h>
 #include <asm/arch-rockchip/hardware.h>
+#include <asm/arch-rockchip/boot_mode.h>
 #include <dt-bindings/clock/rk3568-cru.h>
 
 #define PMUGRF_BASE			0xfdc20000
@@ -135,3 +136,26 @@ int arch_cpu_init(void)
 #endif
 	return 0;
 }
+
+#ifdef CONFIG_SPL_BUILD
+
+void __weak led_setup(void)
+{
+}
+
+void spl_board_init(void)
+{
+	led_setup();
+
+#if (CONFIG_IS_ENABLED(DM_REGULATOR))
+	/*
+	 * Turning the eMMC and SPI back on (if disabled via the Qseven
+	 * BIOS_ENABLE) signal is done through a always-on regulator).
+	 */
+	if (regulators_enable_boot_on(false))
+		debug("%s: Cannot enable boot on regulator\n", __func__);
+#endif
+
+	setup_boot_mode();
+}
+#endif
