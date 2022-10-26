@@ -23,6 +23,7 @@
 #include "rockchip_crtc.h"
 #include "rockchip_connector.h"
 #include "rockchip_phy.h"
+#include "rockchip_tve.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 

@@ -2,8 +2,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  * (C) Copyright 2008-2015 Fuzhou Rockchip Electronics Co., Ltd
  */
-#ifndef __ROCKCHIP_DRM_TVE_H__
-#define __ROCKCHIP_DRM_TVE_H__
+#ifndef __ROCKCHIP_TVE_H__
+#define __ROCKCHIP_TVE_H__
 
 #include <lcd.h>
 
@@ -150,4 +150,4 @@ struct drm_tve {
 #define TVEDBG(format, ...)
 #endif
 
-#endif /* __ROCKCHIP_DRM_TVE_H__*/
+#endif /* __ROCKCHIP_TVE_H__ */
