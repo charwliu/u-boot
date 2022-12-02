@@ -1104,3 +1104,54 @@ U_BOOT_DRIVER(inno_hdmi_phy) = {
 	.probe = inno_hdmi_phy_probe,
 	.priv_auto_alloc_size = sizeof(struct inno_hdmi_phy),
 };
+<<<<<<< HEAD
+=======
+
+
+static ulong inno_hdmi_clk_get_rate(struct clk *clk)
+{
+	struct clk_inno_hdmi *priv = dev_get_priv(clk->dev);
+
+	return priv->rate;
+}
+
+static ulong inno_hdmi_clk_set_rate(struct clk *clk, ulong rate)
+{
+	struct clk_inno_hdmi *priv = dev_get_priv(clk->dev);
+	int ret;
+
+	inno_hdmi_phy_clk_prepare(g_inno);
+	inno_hdmi_phy_clk_is_prepared(g_inno);
+	ret = inno_hdmi_phy_clk_set_rate(g_inno, rate);
+	if (ret < 0) {
+		printf("inno hdmi set rate failed ret:%d\n", ret);
+		return ret;
+	}
+
+	priv->rate = g_inno->pixclock;
+
+	return priv->rate;
+}
+
+static const struct clk_ops inno_hdmi_clk_ops = {
+	.get_rate	= inno_hdmi_clk_get_rate,
+	.set_rate	= inno_hdmi_clk_set_rate,
+};
+
+static int inno_hdmi_clk_probe(struct udevice *dev)
+{
+	return 0;
+}
+
+/*
+ * In order for other display interfaces to use hdmiphy as source
+ * for dclk, hdmiphy must register a virtual clock driver
+ */
+U_BOOT_DRIVER(clk_inno_hdmi) = {
+	.name		= "clk_inno_hdmi",
+	.id		= UCLASS_CLK,
+	.priv_auto_alloc_size = sizeof(struct clk_inno_hdmi),
+	.ops		= &inno_hdmi_clk_ops,
+	.probe		= inno_hdmi_clk_probe,
+};
+>>>>>>> 268b913420e (video/drm: Improve signal quality less than or equal to 340m)
