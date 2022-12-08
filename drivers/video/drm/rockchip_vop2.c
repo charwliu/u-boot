@@ -43,6 +43,7 @@
 
 #define RK3568_SYS_AXI_LUT_CTRL			0x024
 #define LUT_DMA_EN_SHIFT			0
+#define DSP_VS_T_SEL_SHIFT			16
 
 #define RK3568_DSP_IF_EN			0x028
 #define RGB_EN_SHIFT				0
