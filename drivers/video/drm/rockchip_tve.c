@@ -54,7 +54,122 @@ static const struct drm_display_mode tve_modes[] = {
 	  .vrefresh = 60, },
 };
 
+<<<<<<< HEAD
 static void dac_enable(int enable)
+=======
+struct env_config {
+	u32 offset;
+	u32 value;
+};
+
+static struct env_config ntsc_bt656_config[] = {
+	{ BT656_DECODER_CROP, 0x00000000 },
+	{ BT656_DECODER_SIZE, 0x01e002d0 },
+	{ BT656_DECODER_HTOTAL_HS_END, 0x035a003e },
+	{ BT656_DECODER_VACT_ST_HACT_ST, 0x00160069 },
+	{ BT656_DECODER_VTOTAL_VS_END, 0x020d0003 },
+	{ BT656_DECODER_VS_ST_END_F1, 0x01060109 },
+	{ BT656_DECODER_DBG_REG, 0x024002d0 },
+	{ BT656_DECODER_CTRL, 0x00000009 },
+};
+
+static struct env_config ntsc_tve_config[] = {
+	{ TVE_MODE_CTRL, 0x000af906 },
+	{ TVE_HOR_TIMING1, 0x00c07a81 },
+	{ TVE_HOR_TIMING2, 0x169810fc },
+	{ TVE_HOR_TIMING3, 0x96b40000 },
+	{ TVE_SUB_CAR_FRQ, 0x21f07bd7 },
+	{ TVE_IMAGE_POSITION, 0x001500d6 },
+	{ TVE_ROUTING, 0x10088880 },
+	{ TVE_SYNC_ADJUST, 0x00000000 },
+	{ TVE_STATUS, 0x00000000 },
+	{ TVE_CTRL, 0x00000000 },
+	{ TVE_INTR_STATUS, 0x00000000 },
+	{ TVE_INTR_EN, 0x00000000 },
+	{ TVE_INTR_CLR, 0x00000000 },
+	{ TVE_COLOR_BUSRT_SAT, 0x0052543c },
+	{ TVE_CHROMA_BANDWIDTH, 0x00000002 },
+	{ TVE_BRIGHTNESS_CONTRAST, 0x00008300 },
+	{ TVE_CLAMP, 0x00000000 },
+};
+
+static struct env_config pal_bt656_config[] = {
+	{ BT656_DECODER_CROP, 0x00000000 },
+	{ BT656_DECODER_SIZE, 0x024002d0 },
+	{ BT656_DECODER_HTOTAL_HS_END, 0x0360003f },
+	{ BT656_DECODER_VACT_ST_HACT_ST, 0x0016006f },
+	{ BT656_DECODER_VTOTAL_VS_END, 0x02710003 },
+	{ BT656_DECODER_VS_ST_END_F1, 0x0138013b },
+	{ BT656_DECODER_DBG_REG, 0x024002d0 },
+	{ BT656_DECODER_CTRL, 0x00000009 },
+};
+
+static struct env_config pal_tve_config[] = {
+	{ TVE_MODE_CTRL, 0x010ab906 },
+	{ TVE_HOR_TIMING1, 0x00c28381 },
+	{ TVE_HOR_TIMING2, 0x267d111d },
+	{ TVE_HOR_TIMING3, 0x66c00880 },
+	{ TVE_SUB_CAR_FRQ, 0x2a098acb },
+	{ TVE_IMAGE_POSITION, 0x001500f6 },
+	{ TVE_ROUTING, 0x10008882 },
+	{ TVE_SYNC_ADJUST, 0x00000000 },
+	{ TVE_STATUS, 0x000000b0 },
+	{ TVE_CTRL, 0x00000000 },
+	{ TVE_INTR_STATUS, 0x00000000 },
+	{ TVE_INTR_EN, 0x00000000 },
+	{ TVE_INTR_CLR, 0x00000000 },
+	{ TVE_COLOR_BUSRT_SAT, 0x00356245 },
+	{ TVE_CHROMA_BANDWIDTH, 0x00000022 },
+	{ TVE_BRIGHTNESS_CONTRAST, 0x0000aa00 },
+	{ TVE_CLAMP, 0x00000000 },
+};
+
+#define BT656_ENV_CONFIG_SIZE		(sizeof(ntsc_bt656_config) / sizeof(struct env_config))
+#define TVE_ENV_CONFIG_SIZE		(sizeof(ntsc_tve_config) / sizeof(struct env_config))
+
+#define tve_writel(offset, v)		writel(v, tve->reg_base  + offset)
+#define tve_readl(offset)		readl(tve->reg_base + offset)
+
+#define tve_dac_writel(offset, v)	writel(v, tve->vdac_base + offset)
+#define tve_dac_readl(offset)		readl(tve->vdac_base + offset)
+
+#define tve_grf_writel(offset, v)	writel(v, tve->grf + offset)
+#define tve_grf_readl(offset, v)	readl(tve->grf + offset)
+
+struct rockchip_tve_data {
+	int	input_format;
+	int	soc_type;
+};
+
+struct rockchip_tve {
+	struct	rockchip_connector connector;
+	struct	udevice *dev;
+	void	*reg_base;
+	void	*vdac_base;
+	int	soc_type;
+	int	input_format;
+	int 	tv_format;
+	int	test_mode;
+	int	saturation;
+	int	brightcontrast;
+	int	adjtiming;
+	int	lumafilter0;
+	int	lumafilter1;
+	int	lumafilter2;
+	int	lumafilter3;
+	int	lumafilter4;
+	int	lumafilter5;
+	int	lumafilter6;
+	int	lumafilter7;
+	int	daclevel;
+	int	dac1level;
+	int	preferred_mode;
+	int	upsample_mode;
+	void	*grf;
+};
+
+static void tve_write_block(struct rockchip_tve *tve, struct env_config *config, int len)
+>>>>>>> 38729a085ef (video/drm: tve: modify tve and dac configs for SI)
 {
 	u32 mask, val = 0;
 	u32 grfreg = 0;
