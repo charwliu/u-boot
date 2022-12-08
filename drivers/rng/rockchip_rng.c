@@ -106,7 +106,7 @@ static int rk_rng_read_regs(fdt_addr_t addr, void *buf, size_t size)
 	return 0;
 }
 
-static int rk_cryptov1_rng_read(struct udevice *dev, void *data, size_t len)
+static int cryptov1_rng_read(struct udevice *dev, void *data, size_t len)
 {
 	struct rk_rng_platdata *pdata = dev_get_priv(dev);
 	u32 reg = 0;
@@ -137,7 +137,7 @@ exit:
 	return 0;
 }
 
-static int rk_cryptov2_rng_read(struct udevice *dev, void *data, size_t len)
+static int cryptov2_rng_read(struct udevice *dev, void *data, size_t len)
 {
 	struct rk_rng_platdata *pdata = dev_get_priv(dev);
 	u32 reg = 0;
@@ -171,7 +171,7 @@ exit:
 	return retval;
 }
 
-static int rk_trngv1_init(struct udevice *dev)
+static int trngv1_init(struct udevice *dev)
 {
 	u32 status, version;
 	u32 auto_reseed_cnt = 1000;
@@ -198,7 +198,7 @@ static int rk_trngv1_init(struct udevice *dev)
 	return 0;
 }
 
-static int rk_trngv1_rng_read(struct udevice *dev, void *data, size_t len)
+static int trngv1_rng_read(struct udevice *dev, void *data, size_t len)
 {
 	struct rk_rng_platdata *pdata = dev_get_priv(dev);
 	u32 reg = 0;
@@ -228,6 +228,52 @@ exit:
 	return retval;
 }
 
+<<<<<<< HEAD
+=======
+static int rkrng_init(struct udevice *dev)
+{
+	struct rk_rng_platdata *pdata = dev_get_priv(dev);
+	u32 reg = 0;
+
+	rk_clrreg(pdata->base + RKRNG_CTRL, 0xffff);
+
+	reg = trng_read(pdata, RKRNG_STATE);
+	trng_write(pdata, RKRNG_STATE, reg);
+
+	return 0;
+}
+
+static int rkrng_rng_read(struct udevice *dev, void *data, size_t len)
+{
+	struct rk_rng_platdata *pdata = dev_get_priv(dev);
+	u32 reg = 0;
+	int retval;
+
+	if (len > RK_HW_RNG_MAX)
+		return -EINVAL;
+
+	reg = RKRNG_CTRL_SW_DRNG_REQ;
+
+	rk_clrsetreg(pdata->base + RKRNG_CTRL, 0xffff, reg);
+
+	retval = readl_poll_timeout(pdata->base + RKRNG_STATE, reg,
+				    (reg & RKRNG_STATE_SW_DRNG_ACK),
+				    RK_RNG_TIME_OUT);
+	if (retval)
+		goto exit;
+
+	trng_write(pdata, RKRNG_STATE, reg);
+
+	rk_rng_read_regs(pdata->base + RKRNG_DRNG_DATA_0, data, len);
+
+exit:
+	/* close TRNG */
+	rk_clrreg(pdata->base + RKRNG_CTRL, 0xffff);
+
+	return retval;
+}
+
+>>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 static int rockchip_rng_read(struct udevice *dev, void *data, size_t len)
 {
 	unsigned char *buf = data;
@@ -282,19 +328,27 @@ static int rockchip_rng_probe(struct udevice *dev)
 	return ret;
 }
 
-static const struct rk_rng_soc_data rk_cryptov1_soc_data = {
-	.rk_rng_read = rk_cryptov1_rng_read,
+static const struct rk_rng_soc_data cryptov1_soc_data = {
+	.rk_rng_read = cryptov1_rng_read,
 };
 
-static const struct rk_rng_soc_data rk_cryptov2_soc_data = {
-	.rk_rng_read = rk_cryptov2_rng_read,
+static const struct rk_rng_soc_data cryptov2_soc_data = {
+	.rk_rng_read = cryptov2_rng_read,
 };
 
-static const struct rk_rng_soc_data rk_trngv1_soc_data = {
-	.rk_rng_init = rk_trngv1_init,
-	.rk_rng_read = rk_trngv1_rng_read,
+static const struct rk_rng_soc_data trngv1_soc_data = {
+	.rk_rng_init = trngv1_init,
+	.rk_rng_read = trngv1_rng_read,
 };
 
+<<<<<<< HEAD
+=======
+static const struct rk_rng_soc_data rkrng_soc_data = {
+	.rk_rng_init = rkrng_init,
+	.rk_rng_read = rkrng_rng_read,
+};
+
+>>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 static const struct dm_rng_ops rockchip_rng_ops = {
 	.read = rockchip_rng_read,
 };
@@ -302,16 +356,23 @@ static const struct dm_rng_ops rockchip_rng_ops = {
 static const struct udevice_id rockchip_rng_match[] = {
 	{
 		.compatible = "rockchip,cryptov1-rng",
-		.data = (ulong)&rk_cryptov1_soc_data,
+		.data = (ulong)&cryptov1_soc_data,
 	},
 	{
 		.compatible = "rockchip,cryptov2-rng",
-		.data = (ulong)&rk_cryptov2_soc_data,
+		.data = (ulong)&cryptov2_soc_data,
 	},
 	{
 		.compatible = "rockchip,trngv1",
-		.data = (ulong)&rk_trngv1_soc_data,
+		.data = (ulong)&trngv1_soc_data,
 	},
+<<<<<<< HEAD
+=======
+	{
+		.compatible = "rockchip,rkrng",
+		.data = (ulong)&rkrng_soc_data,
+	},
+>>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 	{},
 };
 
