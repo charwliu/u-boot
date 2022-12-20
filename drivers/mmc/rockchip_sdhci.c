@@ -123,15 +123,6 @@ struct sdhci_data {
 	u32 flags;
 #define RK_DLL_CMD_OUT		BIT(1)
 #define RK_RXCLK_NO_INVERTER	BIT(2)
-<<<<<<< HEAD
-=======
-
-	u8 hs200_tx_tap;
-	u8 hs400_tx_tap;
-	u8 hs400_cmd_tap;
-	u8 hs400_strbin_tap;
-	u8 ddr50_strbin_delay_num;
->>>>>>> 13669fc5721 (mmc: rockchip: support hs400es mode)
 };
 
 static void rk3399_emmc_phy_power_on(struct rockchip_emmc_phy *phy, u32 clock)
@@ -350,6 +341,11 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 
 	ret = rockchip_emmc_set_clock(host, clock);
 
+	/* Disable output clock while config DLL */
+	clock_control = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+	clock_control &= ~SDHCI_CLOCK_CARD_EN;
+	sdhci_writew(host, clock_control, SDHCI_CLOCK_CONTROL);
+
 	if (clock >= 100 * MHz) {
 		/* reset DLL */
 		sdhci_writel(host, DWCMSHC_EMMC_DLL_CTRL_RESET, DWCMSHC_EMMC_DLL_CTRL);
@@ -368,8 +364,10 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_CTRL);
 
 		while (1) {
-			if (timeout < 0)
-				return -ETIMEDOUT;
+			if (timeout < 0) {
+				ret = -ETIMEDOUT;
+				goto exit;
+			}
 			if (DLL_LOCK_WO_TMOUT((sdhci_readl(host, DWCMSHC_EMMC_DLL_STATUS0))))
 				break;
 			udelay(1);
@@ -380,23 +378,6 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 			extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_RXCLK);
 
-<<<<<<< HEAD
-=======
-		txclk_tapnum = data->hs200_tx_tap;
-		if ((data->flags & RK_DLL_CMD_OUT) &&
-		    (host->mmc->timing == MMC_TIMING_MMC_HS400 ||
-		    host->mmc->timing == MMC_TIMING_MMC_HS400ES)) {
-			txclk_tapnum = data->hs400_tx_tap;
-
-			extra = DLL_CMDOUT_SRC_CLK_NEG |
-				DLL_CMDOUT_BOTH_CLK_EDGE |
-				DWCMSHC_EMMC_DLL_DLYENA |
-				data->hs400_cmd_tap |
-				DLL_CMDOUT_TAPNUM_FROM_SW;
-			sdhci_writel(host, extra, DECMSHC_EMMC_DLL_CMDOUT);
-		}
-
->>>>>>> 13669fc5721 (mmc: rockchip: support hs400es mode)
 		extra = DWCMSHC_EMMC_DLL_DLYENA |
 			DLL_TXCLK_TAPNUM_FROM_SW |
 			DLL_TXCLK_NO_INVERTER|
@@ -428,6 +409,12 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 			data->ddr50_strbin_delay_num << DLL_STRBIN_DELAY_NUM_OFFSET;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
 	}
+
+exit:
+	/* enable output clock */
+	clock_control = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+	clock_control |= SDHCI_CLOCK_CARD_EN;
+	sdhci_writew(host, clock_control, SDHCI_CLOCK_CONTROL);
 
 	return ret;
 }
@@ -622,44 +609,13 @@ static const struct sdhci_data rk3568_data = {
 	.emmc_set_clock = dwcmshc_sdhci_emmc_set_clock,
 	.get_phy = dwcmshc_emmc_get_phy,
 	.flags = RK_RXCLK_NO_INVERTER,
-<<<<<<< HEAD
-=======
-	.hs200_tx_tap = 16,
-	.hs400_tx_tap = 8,
-	.hs400_cmd_tap = 8,
-	.hs400_strbin_tap = 3,
-	.ddr50_strbin_delay_num = 16,
->>>>>>> 13669fc5721 (mmc: rockchip: support hs400es mode)
 };
 
 static const struct sdhci_data rk3588_data = {
 	.emmc_set_clock = dwcmshc_sdhci_emmc_set_clock,
 	.get_phy = dwcmshc_emmc_get_phy,
 	.set_ios_post = dwcmshc_sdhci_set_ios_post,
-<<<<<<< HEAD
 	.flags = RK_DLL_CMD_OUT | RK_RXCLK_NO_INVERTER,
-=======
-	.set_enhanced_strobe = dwcmshc_sdhci_set_enhanced_strobe,
-	.flags = RK_DLL_CMD_OUT,
-	.hs200_tx_tap = 16,
-	.hs400_tx_tap = 9,
-	.hs400_cmd_tap = 8,
-	.hs400_strbin_tap = 3,
-	.ddr50_strbin_delay_num = 16,
-};
-
-static const struct sdhci_data rk3528_data = {
-	.emmc_set_clock = dwcmshc_sdhci_emmc_set_clock,
-	.get_phy = dwcmshc_emmc_get_phy,
-	.set_ios_post = dwcmshc_sdhci_set_ios_post,
-	.set_enhanced_strobe = dwcmshc_sdhci_set_enhanced_strobe,
-	.flags = RK_DLL_CMD_OUT | RK_RXCLK_NO_INVERTER,
-	.hs200_tx_tap = 12,
-	.hs400_tx_tap = 4,
-	.hs400_cmd_tap = 4,
-	.hs400_strbin_tap = 3,
-	.ddr50_strbin_delay_num = 10,
->>>>>>> 13669fc5721 (mmc: rockchip: support hs400es mode)
 };
 
 static const struct udevice_id sdhci_ids[] = {
