@@ -178,6 +178,7 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 			} else {
 				puts("timeout.\n");
 				/* remove timeout return error and try to send command */
+				break;
 			}
 		}
 		time++;
@@ -643,6 +644,7 @@ static int sdhci_execute_tuning(struct mmc *mmc, u32 opcode)
 {
 #endif
 	struct sdhci_host *host = mmc->priv;
+	int ret;
 	u16 ctrl;
 
 	/*
@@ -670,7 +672,12 @@ static int sdhci_execute_tuning(struct mmc *mmc, u32 opcode)
 	ctrl |= SDHCI_CTRL_EXEC_TUNING;
 	sdhci_writew(host, ctrl, SDHCI_HOST_CONTROL2);
 
-	return __sdhci_execute_tuning(host, opcode);
+	ret = __sdhci_execute_tuning(host, opcode);
+	
+	if (!ret && host->ops && host->ops->execute_tuning_end)
+		host->ops->execute_tuning_end(host);
+
+	return ret;
 }
 
 #ifdef CONFIG_DM_MMC
@@ -681,11 +688,23 @@ int sdhci_probe(struct udevice *dev)
 	return sdhci_init(mmc);
 }
 
+static int sdhci_set_enhanced_strobe(struct udevice *dev)
+{
+	struct mmc *mmc = mmc_get_mmc_dev(dev);
+	struct sdhci_host *host = mmc->priv;
+
+	if (host->ops && host->ops->set_enhanced_strobe)
+		return host->ops->set_enhanced_strobe(host);
+
+	return -ENOTSUPP;
+}
+
 const struct dm_mmc_ops sdhci_ops = {
 	.card_busy	= sdhci_card_busy,
 	.send_cmd	= sdhci_send_command,
 	.set_ios	= sdhci_set_ios,
 	.execute_tuning = sdhci_execute_tuning,
+	.set_enhanced_strobe = sdhci_set_enhanced_strobe,
 };
 #else
 static const struct mmc_ops sdhci_ops = {

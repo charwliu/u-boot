@@ -152,6 +152,7 @@ struct base2_disp_info *rockchip_get_disp_info(int type, int id)
 	struct base2_disp_header *disp_header;
 	int i = 0, offset = -1;
 	u32 crc_val;
+	u32 base2_length;
 	void *base_parameter_addr = (void *)&base_parameter;
 
 	for (i = 0; i < 8; i++) {
@@ -178,11 +179,23 @@ struct base2_disp_info *rockchip_get_disp_info(int type, int id)
 	if (strncasecmp(disp_info->disp_head_flag, "DISP", 4))
 		return NULL;
 
-	crc_val = rockchip_display_crc32c_cal((unsigned char *)disp_info, sizeof(struct base2_disp_info) - 4);
-
-	if (crc_val != disp_info->crc) {
-		printf("error: connector type[%d], id[%d] disp info crc check error\n", type, id);
-		return NULL;
+	if (base_parameter.major_version == 3 && base_parameter.minor_version == 0) {
+		crc_val = rockchip_display_crc32c_cal((unsigned char *)disp_info,
+						      sizeof(struct base2_disp_info) - 4);
+		if (crc_val != disp_info->crc2) {
+			printf("error: connector type[%d], id[%d] disp info crc2 check error\n",
+			       type, id);
+			return NULL;
+		}
+	} else {
+		base2_length = sizeof(struct base2_disp_info) - sizeof(struct csc_info) -
+			       sizeof(struct acm_data) - 10 * 1024 - 4;
+		crc_val = rockchip_display_crc32c_cal((unsigned char *)disp_info, base2_length - 4);
+		if (crc_val != disp_info->crc) {
+			printf("error: connector type[%d], id[%d] disp info crc check error\n",
+			       type, id);
+			return NULL;
+		}
 	}
 
 	return disp_info;
@@ -784,7 +797,7 @@ static int display_init(struct display_state *state)
 	/*
 	 * support hotplug, but not connect;
 	 */
-#ifdef CONFIG_ROCKCHIP_DRM_TVE
+#ifdef CONFIG_DRM_ROCKCHIP_TVE
 	if (crtc->hdmi_hpd && conn_state->type == DRM_MODE_CONNECTOR_TV) {
 		printf("hdmi plugin ,skip tve\n");
 		goto deinit;
@@ -797,7 +810,7 @@ static int display_init(struct display_state *state)
 #endif
 
 	ret = rockchip_connector_detect(state);
-#if defined(CONFIG_ROCKCHIP_DRM_TVE) || defined(CONFIG_DRM_ROCKCHIP_RK1000)
+#if defined(CONFIG_DRM_ROCKCHIP_TVE) || defined(CONFIG_DRM_ROCKCHIP_RK1000)
 	if (conn_state->type == DRM_MODE_CONNECTOR_HDMIA)
 		crtc->hdmi_hpd = ret;
 #endif
@@ -2013,10 +2026,11 @@ static int rockchip_display_probe(struct udevice *dev)
 						s->crtc_state.crtc->vps[vp_id].plane_mask = ret;
 						s->crtc_state.crtc->assign_plane |= true;
 						s->crtc_state.crtc->vps[vp_id].primary_plane_id =
-							ofnode_read_u32_default(vp_node, "rockchip,primary-plane", -1);
+							ofnode_read_u32_default(vp_node, "rockchip,primary-plane", U8_MAX);
 						printf("get vp%d plane mask:0x%x, primary id:%d, cursor_plane:%d, from dts\n",
 						       vp_id,
 						       s->crtc_state.crtc->vps[vp_id].plane_mask,
+						       s->crtc_state.crtc->vps[vp_id].primary_plane_id == U8_MAX ? -1 :
 						       s->crtc_state.crtc->vps[vp_id].primary_plane_id,
 						       cursor_plane);
 					}
@@ -2072,12 +2086,21 @@ void rockchip_display_fixup(void *blob)
 	const struct rockchip_crtc *crtc;
 	struct display_state *s;
 	int offset;
+	int ret;
 	const struct device_node *np;
 	const char *path;
+	const char *cacm_header;
 
 	if (fdt_node_offset_by_compatible(blob, 0, "rockchip,drm-logo") >= 0) {
-		list_for_each_entry(s, &rockchip_display_list, head)
-			load_bmp_logo(&s->logo, s->klogo_name);
+		list_for_each_entry(s, &rockchip_display_list, head) {
+			ret = load_bmp_logo(&s->logo, s->klogo_name);
+			if (ret < 0) {
+				s->is_klogo_valid = false;
+				printf("VP%d fail to load kernel logo\n", s->crtc_state.crtc_id);
+			} else {
+				s->is_klogo_valid = true;
+			}
+		}
 
 		if (!get_display_size())
 			return;
@@ -2108,7 +2131,7 @@ void rockchip_display_fixup(void *blob)
 	}
 
 	list_for_each_entry(s, &rockchip_display_list, head) {
-		if (!s->is_init)
+		if (!s->is_init || !s->is_klogo_valid)
 			continue;
 
 		conn = s->conn_state.connector;
@@ -2166,10 +2189,37 @@ void rockchip_display_fixup(void *blob)
 		FDT_SET_U32("overscan,bottom_margin", s->conn_state.overscan.bottom_margin);
 
 		if (s->conn_state.disp_info) {
+			cacm_header = (const char*)&s->conn_state.disp_info->cacm_header;
+
 			FDT_SET_U32("bcsh,brightness", s->conn_state.disp_info->bcsh_info.brightness);
 			FDT_SET_U32("bcsh,contrast", s->conn_state.disp_info->bcsh_info.contrast);
 			FDT_SET_U32("bcsh,saturation", s->conn_state.disp_info->bcsh_info.saturation);
 			FDT_SET_U32("bcsh,hue", s->conn_state.disp_info->bcsh_info.hue);
+
+			if (!strncasecmp(cacm_header, "CACM", 4)) {
+				FDT_SET_U32("post_csc,hue",
+					    s->conn_state.disp_info->csc_info.hue);
+				FDT_SET_U32("post_csc,saturation",
+					    s->conn_state.disp_info->csc_info.saturation);
+				FDT_SET_U32("post_csc,contrast",
+					    s->conn_state.disp_info->csc_info.contrast);
+				FDT_SET_U32("post_csc,brightness",
+					    s->conn_state.disp_info->csc_info.brightness);
+				FDT_SET_U32("post_csc,r_gain",
+					    s->conn_state.disp_info->csc_info.r_gain);
+				FDT_SET_U32("post_csc,g_gain",
+					    s->conn_state.disp_info->csc_info.g_gain);
+				FDT_SET_U32("post_csc,b_gain",
+					    s->conn_state.disp_info->csc_info.b_gain);
+				FDT_SET_U32("post_csc,r_offset",
+					    s->conn_state.disp_info->csc_info.r_offset);
+				FDT_SET_U32("post_csc,g_offset",
+					    s->conn_state.disp_info->csc_info.g_offset);
+				FDT_SET_U32("post_csc,b_offset",
+					    s->conn_state.disp_info->csc_info.b_offset);
+				FDT_SET_U32("post_csc,csc_enable",
+					    s->conn_state.disp_info->csc_info.csc_enable);
+			}
 		}
 
 		if (s->conn_state.disp_info->cubic_lut_data.size &&
