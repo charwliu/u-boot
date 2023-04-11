@@ -697,7 +697,7 @@ static inline uint32_t convertChipType(const char *chip)
 {
 	char buffer[5];
 	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "%s", chip);
+	memccpy(buffer, chip, '\0', sizeof(buffer));
 	return buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
 }
 
@@ -952,7 +952,7 @@ static bool unpackBoot(char *path)
 
 	LOGD("entry num:%d\n", entryNum);
 	for (i = 0; i < entryNum; i++) {
-		wide2str(entrys[i].name, name, MAX_NAME_LEN);
+		wide2str(entrys[i].name, name, MAX_NAME_LEN-1);
 
 		LOGD("entry:t=%d, name=%s, off=%d, size=%d\n", entrys[i].type, name,
 		     entrys[i].dataOffset, entrys[i].dataSize);

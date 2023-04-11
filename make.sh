@@ -316,7 +316,7 @@ function select_chip_info()
 	#  - RK????, RK????X
 	#  - RV????
 	CHIP_PATTERN='^CONFIG_ROCKCHIP_[R,P][X,V,K][0-9ESX]{1,5}'
-	RKCHIP=`egrep -o ${CHIP_PATTERN} .config`
+	RKCHIP=`grep -E -o ${CHIP_PATTERN} .config`
 
 	# default
 	RKCHIP=${RKCHIP##*_}
