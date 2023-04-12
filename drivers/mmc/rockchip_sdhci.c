@@ -347,6 +347,11 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 
 	ret = rockchip_emmc_set_clock(host, clock);
 
+	/* Disable output clock while config DLL */
+	clock_control = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+	clock_control &= ~SDHCI_CLOCK_CARD_EN;
+	sdhci_writew(host, clock_control, SDHCI_CLOCK_CONTROL);
+
 	if (clock >= 100 * MHz) {
 		/* reset DLL */
 		sdhci_writel(host, DWCMSHC_EMMC_DLL_CTRL_RESET, DWCMSHC_EMMC_DLL_CTRL);
@@ -365,8 +370,10 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_CTRL);
 
 		while (1) {
-			if (timeout < 0)
-				return -ETIMEDOUT;
+			if (timeout < 0) {
+				ret = -ETIMEDOUT;
+				goto exit;
+			}
 			if (DLL_LOCK_WO_TMOUT((sdhci_readl(host, DWCMSHC_EMMC_DLL_STATUS0))))
 				break;
 			udelay(1);
@@ -423,6 +430,12 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
 	}
 
+exit:
+	/* enable output clock */
+	clock_control = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+	clock_control |= SDHCI_CLOCK_CARD_EN;
+	sdhci_writew(host, clock_control, SDHCI_CLOCK_CONTROL);
+
 	return ret;
 }
 
@@ -437,6 +450,9 @@ static int dwcmshc_sdhci_set_enhanced_strobe(struct sdhci_host *host)
 	else
 		vendor &= ~DWCMSHC_ENHANCED_STROBE;
 	sdhci_writel(host, vendor, DWCMSHC_EMMC_CONTROL);
+
+	/* some emmc device need a delay before send command */
+	udelay(100);
 
 	return 0;
 }
