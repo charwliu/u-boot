@@ -1,13 +1,14 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * Copyright (c) 2011 The Chromium OS Authors.
- *
- * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /* Taken from Linux kernel, commit f56c3196 */
 
 #ifndef _ASM_GENERIC_SECTIONS_H_
 #define _ASM_GENERIC_SECTIONS_H_
+
+#include <linux/types.h>
 
 /* References to section boundaries */
 
@@ -22,8 +23,13 @@ extern char __kprobes_text_start[], __kprobes_text_end[];
 extern char __entry_text_start[], __entry_text_end[];
 extern char __initdata_begin[], __initdata_end[];
 extern char __start_rodata[], __end_rodata[];
-extern char __efi_hello_world_begin[];
-extern char __efi_hello_world_end[];
+extern char __efi_helloworld_begin[];
+extern char __efi_helloworld_end[];
+extern char __efi_var_file_begin[];
+extern char __efi_var_file_end[];
+
+/* Private data used by of-platdata devices/uclasses */
+extern char __priv_data_start[], __priv_data_end[];
 
 /* Start and end of .ctors section - used for constructor calls. */
 extern char __ctors_start[], __ctors_end[];

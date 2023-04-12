@@ -1,8 +1,7 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * Copyright (C) 2015 Google, Inc
  * Written by Simon Glass <sjg@chromium.org>
- *
- * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef _PMIC_ACT8846_H_
@@ -10,7 +9,7 @@
 
 #include <asm/gpio.h>
 
-#define ACT8846_NUM_OF_REGS	12
+#define ACT8846_NUM_OF_REGS	0xf6
 
 #define BUCK_VOL_MASK 0x3f
 #define LDO_VOL_MASK 0x3f

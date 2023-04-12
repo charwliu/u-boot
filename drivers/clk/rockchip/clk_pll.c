@@ -1,17 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
- * (C) Copyright 2018 Rockchip Electronics Co., Ltd
- *
- * SPDX-License-Identifier:	GPL-2.0
+ * (C) Copyright 2018-2019 Rockchip Electronics Co., Ltd
  */
  #include <common.h>
 #include <bitfield.h>
 #include <clk-uclass.h>
 #include <dm.h>
 #include <errno.h>
+#include <log.h>
 #include <asm/io.h>
-#include <asm/arch/clock.h>
-#include <asm/arch/hardware.h>
+#include <asm/arch-rockchip/clock.h>
+#include <asm/arch-rockchip/hardware.h>
 #include <div64.h>
+#include <linux/delay.h>
 
 static struct rockchip_pll_rate_table rockchip_auto_table;
 
@@ -30,19 +31,20 @@ static struct rockchip_pll_rate_table rockchip_auto_table;
 #define RK3036_PLLCON1_DSMPD_SHIFT		12
 #define RK3036_PLLCON2_FRAC_MASK		0xffffff
 #define RK3036_PLLCON2_FRAC_SHIFT		0
-#define RK3036_PLLCON1_PWRDOWN_SHIT		13
+#define RK3036_PLLCON1_PWRDOWN_SHIFT		13
 
 #define MHZ		1000000
 #define KHZ		1000
+enum {
+	OSC_HZ			= 24 * 1000000,
+	VCO_MAX_HZ	= 3200U * 1000000,
+	VCO_MIN_HZ	= 800 * 1000000,
+	OUTPUT_MAX_HZ	= 3200U * 1000000,
+	OUTPUT_MIN_HZ	= 24 * 1000000,
+};
 
-#define OSC_HZ			(24UL * MHZ)
-#define VCO_MAX_HZ		(3200UL * MHZ)
-#define VCO_MIN_HZ		(800UL * MHZ)
-#define OUTPUT_MAX_HZ		(3200UL * MHZ)
-#define OUTPUT_MIN_HZ		(24UL * MHZ)
-#define MIN_FOUTVCO_FREQ	(800UL * MHZ)
-#define MAX_FOUTVCO_FREQ	(2000UL * MHZ)
-
+#define MIN_FOUTVCO_FREQ	(800 * MHZ)
+#define MAX_FOUTVCO_FREQ	(2000 * MHZ)
 #define RK3588_VCO_MIN_HZ	(2250UL * MHZ)
 #define RK3588_VCO_MAX_HZ	(4500UL * MHZ)
 #define RK3588_FOUT_MIN_HZ	(37UL * MHZ)
@@ -250,7 +252,6 @@ static int rk3036_pll_set_rate(struct rockchip_pll_clock *pll,
 			       ulong drate)
 {
 	const struct rockchip_pll_rate_table *rate;
-	int timeout = 100;
 
 	rate = rockchip_get_pll_settings(pll, drate);
 	if (!rate) {
@@ -273,7 +274,7 @@ static int rk3036_pll_set_rate(struct rockchip_pll_clock *pll,
 
 	/* Power down */
 	rk_setreg(base + pll->con_offset + 0x4,
-		  1 << RK3036_PLLCON1_PWRDOWN_SHIT);
+		  1 << RK3036_PLLCON1_PWRDOWN_SHIFT);
 
 	rk_clrsetreg(base + pll->con_offset,
 		     (RK3036_PLLCON0_POSTDIV1_MASK |
@@ -297,16 +298,11 @@ static int rk3036_pll_set_rate(struct rockchip_pll_clock *pll,
 
 	/* Power Up */
 	rk_clrreg(base + pll->con_offset + 0x4,
-		  1 << RK3036_PLLCON1_PWRDOWN_SHIT);
+		  1 << RK3036_PLLCON1_PWRDOWN_SHIFT);
 
 	/* waiting for pll lock */
-	while ((timeout > 0) && !(readl(base + pll->con_offset + 0x4) & (1 << pll->lock_shift))) {
+	while (!(readl(base + pll->con_offset + 0x4) & (1 << pll->lock_shift)))
 		udelay(1);
-		timeout--;
-	}
-
-	if (!(readl(base + pll->con_offset + 0x4) & (1 << pll->lock_shift)))
-		printf("%s: wait pll lock timeout! pll_id=%ld\n", __func__, pll_id);
 
 	rk_clrsetreg(base + pll->mode_offset, pll->mode_mask << pll->mode_shift,
 		     RKCLK_PLL_MODE_NORMAL << pll->mode_shift);
@@ -624,4 +620,3 @@ rockchip_get_cpu_settings(struct rockchip_cpu_rate_table *cpu_table,
 	else
 		return ps;
 }
-

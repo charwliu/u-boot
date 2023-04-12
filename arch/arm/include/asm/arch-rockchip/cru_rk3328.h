@@ -1,13 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * (C) Copyright 2016 Rockchip Electronics Co., Ltd
- *
- * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #ifndef __ASM_ARCH_CRU_RK3328_H_
 #define __ASM_ARCH_CRU_RK3328_H_
-
-#include <common.h>
 
 struct rk3328_clk_priv {
 	struct rk3328_cru *cru;
@@ -242,5 +239,8 @@ enum {
 	DCLK_LCDC_DIV_CON_SHIFT		= 8,
 	DCLK_LCDC_DIV_CON_MASK		= 0xFf << DCLK_LCDC_DIV_CON_SHIFT,
 };
+
+void rk3328_configure_cpu(struct rk3328_cru *cru,
+			  enum apll_frequencies apll_freq);
 
 #endif	/* __ASM_ARCH_CRU_RK3328_H_ */

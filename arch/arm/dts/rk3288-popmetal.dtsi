@@ -38,6 +38,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <dt-bindings/input/input.h>
 #include "rk3288.dtsi"
 #include "rk3288-u-boot.dtsi"
 
@@ -64,6 +65,7 @@
 		power {
 			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
 			label = "GPIO Key Power";
+			linux,code = <KEY_POWER>;
 			linux,input-type = <1>;
 			wakeup-source;
 			debounce-interval = <100>;

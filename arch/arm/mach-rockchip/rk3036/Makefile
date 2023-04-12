@@ -10,4 +10,5 @@ ifndef CONFIG_TPL_BUILD
 obj-y += syscon_rk3036.o
 endif
 
+obj-y += rk3036.o
 obj-y += sdram_rk3036.o
