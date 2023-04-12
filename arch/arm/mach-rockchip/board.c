@@ -942,13 +942,13 @@ int board_do_bootm(int argc, char * const argv[])
 
 		if (!sysmem_alloc_base(MEM_ANDROID, (ulong)hdr, size))
 			return -ENOMEM;
-
+if (0) {
 		ret = bootm_image_populate_dtb(img);
 		if (ret) {
 			printf("bootm can't read dtb, ret=%d\n", ret);
 			return ret;
 		}
-
+}
 		ret = android_image_memcpy_separate(hdr, &load_addr);
 		if (ret) {
 			printf("board do bootm failed, ret=%d\n", ret);
@@ -1132,12 +1132,12 @@ char *board_fdt_chosen_bootargs(void *fdt)
 		 */
 #ifdef CONFIG_ANDROID_AB
 		env_update_filter("bootargs", bootargs, "root=");
+		ab_update_root_partition();
 #else
 		env_update("bootargs", bootargs);
 #endif
 	}
 
-<<<<<<< HEAD
 #ifdef CONFIG_VENDOR_FRIENDLYELEC
 	char *panel = board_get_panel_name();
 	if (panel) {
@@ -1148,7 +1148,11 @@ char *board_fdt_chosen_bootargs(void *fdt)
 	}
 #endif
 
-	char * sys_bootargs;
+#if defined(CONFIG_ENVF) || defined(CONFIG_ENV_PARTITION)
+	char *part_type[] = { "mtdparts", "blkdevparts" };
+	char *part_list;
+	char *env;
+	int id = 0;
 
 	env = env_get(part_type[id]);
 	if (!env)
