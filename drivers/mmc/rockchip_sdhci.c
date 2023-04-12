@@ -62,7 +62,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DWCMSHC_EMMC_DLL_STATUS0	0x840
 #define DWCMSHC_EMMC_DLL_STATUS1	0x844
 #define DWCMSHC_EMMC_DLL_START		BIT(0)
-#define DWCMSHC_EMMC_DLL_RXCLK_SRCSEL	29
 #define DWCMSHC_EMMC_DLL_START_POINT	16
 #define DWCMSHC_EMMC_DLL_START_DEFAULT	5
 #define DWCMSHC_EMMC_DLL_INC_VALUE	2
@@ -79,8 +78,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DLL_TXCLK_NO_INVERTER		BIT(29)
 #define DWCMSHC_EMMC_DLL_LOCKED		BIT(8)
 #define DWCMSHC_EMMC_DLL_TIMEOUT	BIT(9)
-#define DLL_RXCLK_NO_INVERTER		1
-#define DLL_RXCLK_INVERTER		0
+#define DLL_RXCLK_NO_INVERTER		BIT(29)
+#define DLL_RXCLK_ORI_GATE		BIT(31)
 #define DLL_CMDOUT_TAPNUM_90_DEGREES	0x8
 #define DLL_CMDOUT_TAPNUM_FROM_SW	BIT(24)
 #define DLL_CMDOUT_SRC_CLK_NEG		BIT(28)
@@ -342,7 +341,8 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 {
 	struct rockchip_sdhc *priv = container_of(host, struct rockchip_sdhc, host);
 	struct sdhci_data *data = (struct sdhci_data *)dev_get_driver_data(priv->dev);
-	u32 extra;
+	u32 txclk_tapnum, extra;
+	u16 clock_control;
 	int timeout = 500, ret;
 
 	ret = rockchip_emmc_set_clock(host, clock);
@@ -379,9 +379,9 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 			udelay(1);
 			timeout--;
 		}
-		extra = DWCMSHC_EMMC_DLL_DLYENA;
+		extra = DWCMSHC_EMMC_DLL_DLYENA | DLL_RXCLK_ORI_GATE;
 		if (data->flags & RK_RXCLK_NO_INVERTER)
-			extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
+			extra |= DLL_RXCLK_NO_INVERTER;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_RXCLK);
 
 		txclk_tapnum = data->hs200_tx_tap;
@@ -401,12 +401,12 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 		extra = DWCMSHC_EMMC_DLL_DLYENA |
 			DLL_TXCLK_TAPNUM_FROM_SW |
 			DLL_TXCLK_NO_INVERTER|
-			DLL_TXCLK_TAPNUM_DEFAULT;
-
+			txclk_tapnum;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_TXCLK);
 
 		extra = DWCMSHC_EMMC_DLL_DLYENA |
-			DLL_STRBIN_TAPNUM_DEFAULT;
+			data->hs400_strbin_tap |
+			DLL_STRBIN_TAPNUM_FROM_SW;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
 	} else {
 		/* Disable cmd conflict check */
@@ -428,10 +428,6 @@ static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int cl
 			DLL_STRBIN_DELAY_NUM_SEL |
 			data->ddr50_strbin_delay_num << DLL_STRBIN_DELAY_NUM_OFFSET;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
-
-		/* Reset last tuning data while re-init */
-		if (clock < 1 * MHz)
-			priv->hs200_rx_tap = 0;
 	}
 
 exit:
@@ -464,7 +460,6 @@ static int dwcmshc_sdhci_set_enhanced_strobe(struct sdhci_host *host)
 static void dwcmshc_sdhci_set_ios_post(struct sdhci_host *host)
 {
 	u16 ctrl;
-	u32 extra;
 	u32 timing = host->mmc->timing;
 
 	if (timing == MMC_TIMING_MMC_HS400 || timing == MMC_TIMING_MMC_HS400ES) {
@@ -477,16 +472,6 @@ static void dwcmshc_sdhci_set_ios_post(struct sdhci_host *host)
 		ctrl = sdhci_readw(host, DWCMSHC_EMMC_CONTROL);
 		ctrl |= DWCMSHC_CARD_IS_EMMC;
 		sdhci_writew(host, ctrl, DWCMSHC_EMMC_CONTROL);
-
-		extra = DLL_CMDOUT_SRC_CLK_NEG |
-			DLL_CMDOUT_EN_SRC_CLK_NEG;
-		sdhci_writel(host, extra, DECMSHC_EMMC_DLL_CMDOUT);
-
-		extra = DWCMSHC_EMMC_DLL_DLYENA |
-			DLL_TXCLK_TAPNUM_FROM_SW |
-			DLL_TXCLK_NO_INVERTER|
-			DLL_TXCLK_TAPNUM_90_DEGREES;
-		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_TXCLK);
 	}
 }
 
