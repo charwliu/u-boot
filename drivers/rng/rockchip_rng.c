@@ -70,6 +70,27 @@
 #define TRNG_v1_VERSION_CODE			0x46BC
 /* end of TRNG V1 register define */
 
+/* start of RKRNG register define */
+#define RKRNG_CTRL				0x0010
+#define RKRNG_CTRL_INST_REQ			BIT(0)
+#define RKRNG_CTRL_RESEED_REQ			BIT(1)
+#define RKRNG_CTRL_TEST_REQ			BIT(2)
+#define RKRNG_CTRL_SW_DRNG_REQ			BIT(3)
+#define RKRNG_CTRL_SW_TRNG_REQ			BIT(4)
+
+#define RKRNG_STATE				0x0014
+#define RKRNG_STATE_INST_ACK			BIT(0)
+#define RKRNG_STATE_RESEED_ACK			BIT(1)
+#define RKRNG_STATE_TEST_ACK			BIT(2)
+#define RKRNG_STATE_SW_DRNG_ACK			BIT(3)
+#define RKRNG_STATE_SW_TRNG_ACK			BIT(4)
+
+/* DRNG_DATA_0 ~ DNG_DATA_7 */
+#define RKRNG_DRNG_DATA_0			0x0070
+#define RKRNG_DRNG_DATA_7			0x008C
+
+/* end of RKRNG register define */
+
 #define RK_RNG_TIME_OUT	50000  /* max 50ms */
 
 #define trng_write(pdata, pos, val)	writel(val, (pdata)->base + (pos))
@@ -228,8 +249,6 @@ exit:
 	return retval;
 }
 
-<<<<<<< HEAD
-=======
 static int rkrng_init(struct udevice *dev)
 {
 	struct rk_rng_platdata *pdata = dev_get_priv(dev);
@@ -273,7 +292,6 @@ exit:
 	return retval;
 }
 
->>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 static int rockchip_rng_read(struct udevice *dev, void *data, size_t len)
 {
 	unsigned char *buf = data;
@@ -341,14 +359,11 @@ static const struct rk_rng_soc_data trngv1_soc_data = {
 	.rk_rng_read = trngv1_rng_read,
 };
 
-<<<<<<< HEAD
-=======
 static const struct rk_rng_soc_data rkrng_soc_data = {
 	.rk_rng_init = rkrng_init,
 	.rk_rng_read = rkrng_rng_read,
 };
 
->>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 static const struct dm_rng_ops rockchip_rng_ops = {
 	.read = rockchip_rng_read,
 };
@@ -366,13 +381,10 @@ static const struct udevice_id rockchip_rng_match[] = {
 		.compatible = "rockchip,trngv1",
 		.data = (ulong)&trngv1_soc_data,
 	},
-<<<<<<< HEAD
-=======
 	{
 		.compatible = "rockchip,rkrng",
 		.data = (ulong)&rkrng_soc_data,
 	},
->>>>>>> 2e58f102c83 (rockchip: rng: modify trng v2 to rkrng)
 	{},
 };
 
