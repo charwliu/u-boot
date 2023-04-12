@@ -127,6 +127,13 @@ config TARGET_ROC_PC_RK3399
 	   * wide voltage input(5V-15V), dual cell battery
 	   * Wifi/BT accessible via expansion board M.2
 
+config TARGET_NANOPI4
+    bool "FriendlyElec NanoPi 4 Series"
+    select BOARD_LATE_INIT
+    select VENDOR_FRIENDLYELEC
+    help
+      Support for FriendlyElec boards based on RK3399.
+
 endchoice
 
 config ROCKCHIP_BOOT_MODE_REG
@@ -175,6 +182,7 @@ source "board/pine64/pinebook-pro-rk3399/Kconfig"
 source "board/pine64/pinephone-pro-rk3399/Kconfig"
 source "board/pine64/rockpro64_rk3399/Kconfig"
 source "board/rockchip/evb_rk3399/Kconfig"
+source "board/rockchip/nanopi4/Kconfig"
 source "board/theobroma-systems/puma_rk3399/Kconfig"
 source "board/vamrs/rock960_rk3399/Kconfig"
 
