@@ -31,7 +31,6 @@
 #include "rockchip_display.h"
 #include "rockchip_crtc.h"
 #include "rockchip_connector.h"
-#include "rockchip_post_csc.h"
 
 /* System registers definition */
 #define RK3568_REG_CFG_DONE			0x000
@@ -336,27 +335,6 @@
 #define RK3568_VP0_BCSH_COLOR			0xC6C
 #define BCSH_EN_SHIFT				31
 #define BCSH_EN_MASK				1
-
-#define RK3528_VP0_ACM_CTRL			0xCD0
-#define POST_CSC_COE00_MASK			0xFFFF
-#define POST_CSC_COE00_SHIFT			16
-#define POST_R2Y_MODE_MASK			0x7
-#define POST_R2Y_MODE_SHIFT			8
-#define POST_CSC_MODE_MASK			0x7
-#define POST_CSC_MODE_SHIFT			3
-#define POST_R2Y_EN_MASK			0x1
-#define POST_R2Y_EN_SHIFT			2
-#define POST_CSC_EN_MASK			0x1
-#define POST_CSC_EN_SHIFT			1
-#define POST_ACM_BYPASS_EN_MASK			0x1
-#define POST_ACM_BYPASS_EN_SHIFT		0
-#define RK3528_VP0_CSC_COE01_02			0xCD4
-#define RK3528_VP0_CSC_COE10_11			0xCD8
-#define RK3528_VP0_CSC_COE12_20			0xCDC
-#define RK3528_VP0_CSC_COE21_22			0xCE0
-#define RK3528_VP0_CSC_OFFSET0			0xCE4
-#define RK3528_VP0_CSC_OFFSET1			0xCE8
-#define RK3528_VP0_CSC_OFFSET2			0xCEC
 
 #define RK3568_VP1_DSP_CTRL			0xD00
 #define RK3568_VP1_MIPI_CTRL			0xD04
@@ -720,9 +698,6 @@
 #define DSC_SBO_SHIFT				28
 #define DSC_IFEP_SHIFT				29
 #define DSC_PPS_UPD_SHIFT			31
-#define DSC_CTRL0_DEF_CON ((1 << DSC_EN_SHIFT)   | (1 << DSC_RBIT_SHIFT) | (0 << DSC_RBYT_SHIFT) | \
-			   (1 << DSC_FLAL_SHIFT) | (1 << DSC_MER_SHIFT)  | (0 << DSC_EPB_SHIFT)  | \
-			   (1 << DSC_EPL_SHIFT)  | (1 << DSC_SBO_SHIFT))
 
 #define RK3588_DSC_8K_CTRL1			0x40A4
 #define RK3588_DSC_8K_STS0			0x40A8
@@ -733,18 +708,6 @@
 #define RK3588_DSC_4K_CTRL1			0x41A4
 #define RK3588_DSC_4K_STS0			0x41A8
 #define RK3588_DSC_4K_ERS			0x41C4
-
-/* RK3528 ACM register definition */
-#define RK3528_ACM_CTRL				0x6400
-#define RK3528_ACM_DELTA_RANGE			0x6404
-#define RK3528_ACM_FETCH_START			0x6408
-#define RK3528_ACM_FETCH_DONE			0x6420
-#define RK3528_ACM_YHS_DEL_HY_SEG0		0x6500
-#define RK3528_ACM_YHS_DEL_HY_SEG152		0x6760
-#define RK3528_ACM_YHS_DEL_HS_SEG0		0x6764
-#define RK3528_ACM_YHS_DEL_HS_SEG220		0x6ad4
-#define RK3528_ACM_YHS_DEL_HGAIN_SEG0		0x6ad8
-#define RK3528_ACM_YHS_DEL_HGAIN_SEG64		0x6bd8
 
 #define RK3568_MAX_REG				0x1ED0
 
@@ -812,43 +775,7 @@
 
 #define VOP2_PLANE_NO_SCALING			BIT(16)
 
-<<<<<<< HEAD
 enum vop2_csc_format {
-=======
-#define VOP_FEATURE_OUTPUT_10BIT	BIT(0)
-#define VOP_FEATURE_AFBDC		BIT(1)
-#define VOP_FEATURE_ALPHA_SCALE		BIT(2)
-#define VOP_FEATURE_HDR10		BIT(3)
-#define VOP_FEATURE_NEXT_HDR		BIT(4)
-/* a feature to splice two windows and two vps to support resolution > 4096 */
-#define VOP_FEATURE_SPLICE		BIT(5)
-#define VOP_FEATURE_OVERSCAN		BIT(6)
-#define VOP_FEATURE_VIVID_HDR		BIT(7)
-#define VOP_FEATURE_POST_ACM		BIT(8)
-#define VOP_FEATURE_POST_CSC		BIT(9)
-
-#define WIN_FEATURE_HDR2SDR		BIT(0)
-#define WIN_FEATURE_SDR2HDR		BIT(1)
-#define WIN_FEATURE_PRE_OVERLAY		BIT(2)
-#define WIN_FEATURE_AFBDC		BIT(3)
-#define WIN_FEATURE_CLUSTER_MAIN	BIT(4)
-#define WIN_FEATURE_CLUSTER_SUB		BIT(5)
-/* a mirror win can only get fb address
- * from source win:
- * Cluster1---->Cluster0
- * Esmart1 ---->Esmart0
- * Smart1  ---->Smart0
- * This is a feather on rk3566
- */
-#define WIN_FEATURE_MIRROR		BIT(6)
-#define WIN_FEATURE_MULTI_AREA		BIT(7)
-#define WIN_FEATURE_Y2R_13BIT_DEPTH	BIT(8)
-
-#define V4L2_COLORSPACE_BT709F		0xfe
-#define V4L2_COLORSPACE_BT2020F		0xff
-
-enum vop_csc_format {
->>>>>>> 6027c871296 (video/drm: vop3: support acm and csc)
 	CSC_BT601L,
 	CSC_BT709L,
 	CSC_BT601F,
@@ -1665,168 +1592,6 @@ static void vop2_post_config(struct display_state *state, struct vop2 *vop2)
 	vop2_setup_dly_for_vp(state, vop2, cstate->crtc_id);
 	if (cstate->splice_mode)
 		vop2_setup_dly_for_vp(state, vop2, cstate->splice_crtc_id);
-}
-
-static void vop3_post_acm_config(struct display_state *state, struct vop2 *vop2)
-{
-	struct connector_state *conn_state = &state->conn_state;
-	struct crtc_state *cstate = &state->crtc_state;
-	struct acm_data *acm = &conn_state->disp_info->acm_data;
-	struct drm_display_mode *mode = &conn_state->mode;
-	u32 vp_offset = (cstate->crtc_id * 0x100);
-	s16 *lut_y;
-	s16 *lut_h;
-	s16 *lut_s;
-	u32 value;
-	int i;
-
-	if (!acm->acm_enable) {
-		writel(0x2, vop2->regs + RK3528_ACM_CTRL);
-		vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-				POST_ACM_BYPASS_EN_MASK, POST_ACM_BYPASS_EN_SHIFT, 1, false);
-		return;
-	}
-
-	printf("post acm enable\n");
-
-	writel(1, vop2->regs + RK3528_ACM_FETCH_START);
-
-	value = (acm->acm_enable & 0x1) + ((mode->hdisplay & 0xfff) << 8) +
-		((mode->vdisplay & 0xfff) << 20);
-	writel(value, vop2->regs + RK3528_ACM_CTRL);
-	vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-			POST_ACM_BYPASS_EN_MASK, POST_ACM_BYPASS_EN_SHIFT, 0, false);
-
-	value = (acm->y_gain & 0x3ff) + ((acm->h_gain << 10) & 0xffc00) +
-		((acm->s_gain << 20) & 0x3ff00000);
-	writel(value, vop2->regs + RK3528_ACM_DELTA_RANGE);
-
-	lut_y = &acm->gain_lut_hy[0];
-	lut_h = &acm->gain_lut_hy[ACM_GAIN_LUT_HY_LENGTH];
-	lut_s = &acm->gain_lut_hy[ACM_GAIN_LUT_HY_LENGTH * 2];
-	for (i = 0; i < ACM_GAIN_LUT_HY_LENGTH; i++) {
-		value = (lut_y[i] & 0xff) + ((lut_h[i] << 8) & 0xff00) +
-			((lut_s[i] << 16) & 0xff0000);
-		writel(value, vop2->regs + RK3528_ACM_YHS_DEL_HY_SEG0 + (i << 2));
-	}
-
-	lut_y = &acm->gain_lut_hs[0];
-	lut_h = &acm->gain_lut_hs[ACM_GAIN_LUT_HS_LENGTH];
-	lut_s = &acm->gain_lut_hs[ACM_GAIN_LUT_HS_LENGTH * 2];
-	for (i = 0; i < ACM_GAIN_LUT_HS_LENGTH; i++) {
-		value = (lut_y[i] & 0xff) + ((lut_h[i] << 8) & 0xff00) +
-			((lut_s[i] << 16) & 0xff0000);
-		writel(value, vop2->regs + RK3528_ACM_YHS_DEL_HS_SEG0 + (i << 2));
-	}
-
-	lut_y = &acm->delta_lut_h[0];
-	lut_h = &acm->delta_lut_h[ACM_DELTA_LUT_H_LENGTH];
-	lut_s = &acm->delta_lut_h[ACM_DELTA_LUT_H_LENGTH * 2];
-	for (i = 0; i < ACM_DELTA_LUT_H_LENGTH; i++) {
-		value = (lut_y[i] & 0x3ff) + ((lut_h[i] << 12) & 0xff000) +
-			((lut_s[i] << 20) & 0x3ff00000);
-		writel(value, vop2->regs + RK3528_ACM_YHS_DEL_HGAIN_SEG0 + (i << 2));
-	}
-
-	writel(1, vop2->regs + RK3528_ACM_FETCH_DONE);
-}
-
-static void vop3_post_csc_config(struct display_state *state, struct vop2 *vop2)
-{
-	struct connector_state *conn_state = &state->conn_state;
-	struct crtc_state *cstate = &state->crtc_state;
-	struct acm_data *acm = &conn_state->disp_info->acm_data;
-	struct csc_info *csc = &conn_state->disp_info->csc_info;
-	struct post_csc_coef csc_coef;
-	bool is_input_yuv = false;
-	bool is_output_yuv = false;
-	bool post_r2y_en = false;
-	bool post_csc_en = false;
-	u32 vp_offset = (cstate->crtc_id * 0x100);
-	u32 value;
-	int range_type;
-
-	printf("post csc enable\n");
-
-	if (acm->acm_enable) {
-		if (!cstate->yuv_overlay)
-			post_r2y_en = true;
-
-		/* do y2r in csc module */
-		if (!is_yuv_output(conn_state->bus_format))
-			post_csc_en = true;
-	} else {
-		if (!cstate->yuv_overlay && is_yuv_output(conn_state->bus_format))
-			post_r2y_en = true;
-
-		/* do y2r in csc module */
-		if (cstate->yuv_overlay && !is_yuv_output(conn_state->bus_format))
-			post_csc_en = true;
-	}
-
-	if (csc->csc_enable)
-		post_csc_en = true;
-
-	if (cstate->yuv_overlay || post_r2y_en)
-		is_input_yuv = true;
-
-	if (is_yuv_output(conn_state->bus_format))
-		is_output_yuv = true;
-
-	cstate->post_csc_mode = vop2_convert_csc_mode(conn_state->color_space, CSC_13BIT_DEPTH);
-
-	if (post_csc_en) {
-		rockchip_calc_post_csc(csc, &csc_coef, cstate->post_csc_mode, is_input_yuv,
-				       is_output_yuv);
-
-		vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-				POST_CSC_COE00_MASK, POST_CSC_COE00_SHIFT,
-				csc_coef.csc_coef00, false);
-		value = (csc_coef.csc_coef02 << 16) | csc_coef.csc_coef01;
-		writel(value, vop2->regs + RK3528_VP0_CSC_COE01_02);
-		value = (csc_coef.csc_coef11 << 16) | csc_coef.csc_coef10;
-		writel(value, vop2->regs + RK3528_VP0_CSC_COE10_11);
-		value = (csc_coef.csc_coef20 << 16) | csc_coef.csc_coef12;
-		writel(value, vop2->regs + RK3528_VP0_CSC_COE12_20);
-		value = (csc_coef.csc_coef22 << 16) | csc_coef.csc_coef21;
-		writel(value, vop2->regs + RK3528_VP0_CSC_COE21_22);
-		writel(csc_coef.csc_dc0, vop2->regs + RK3528_VP0_CSC_OFFSET0);
-		writel(csc_coef.csc_dc1, vop2->regs + RK3528_VP0_CSC_OFFSET1);
-		writel(csc_coef.csc_dc2, vop2->regs + RK3528_VP0_CSC_OFFSET2);
-
-		range_type = csc_coef.range_type ? 0 : 1;
-		range_type <<= is_input_yuv ? 0 : 1;
-		vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-				POST_CSC_MODE_MASK, POST_CSC_MODE_SHIFT, range_type, false);
-	}
-
-	vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-			POST_R2Y_MODE_MASK, POST_R2Y_MODE_SHIFT, post_r2y_en ? 1 : 0, false);
-	vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-			POST_CSC_EN_MASK, POST_CSC_EN_SHIFT, post_csc_en ? 1 : 0, false);
-	vop2_mask_write(vop2, RK3528_VP0_ACM_CTRL + vp_offset,
-			POST_R2Y_MODE_MASK, POST_R2Y_MODE_SHIFT, cstate->post_csc_mode, false);
-}
-
-static void vop3_post_config(struct display_state *state, struct vop2 *vop2)
-{
-	struct connector_state *conn_state = &state->conn_state;
-	struct base2_disp_info *disp_info = conn_state->disp_info;
-	const char *enable_flag;
-
-	if (!disp_info) {
-		printf("disp_info is empty\n");
-		return;
-	}
-
-	enable_flag = (const char *)&disp_info->cacm_header;
-	if (strncasecmp(enable_flag, "CACM", 4)) {
-		printf("acm and csc is not support\n");
-		return;
-	}
-
-	vop3_post_acm_config(state, vop2);
-	vop3_post_csc_config(state, vop2);
 }
 
 /*
@@ -2783,10 +2548,10 @@ static void vop2_dsc_enable(struct display_state *state, struct vop2 *vop2, u8 d
 	u16 vact_end = vact_st + vdisplay;
 	u32 ctrl_regs_offset = (dsc_id * 0x30);
 	u32 decoder_regs_offset = (dsc_id * 0x100);
+	u32 backup_regs_offset = 0;
 	int dsc_txp_clk_div = 0;
 	int dsc_pxl_clk_div = 0;
 	int dsc_cds_clk_div = 0;
-	int val = 0;
 
 	if (!vop2->data->nr_dscs) {
 		printf("Unsupported DSC\n");
@@ -2925,15 +2690,34 @@ static void vop2_dsc_enable(struct display_state *state, struct vop2 *vop2, u8 d
 	vop2_mask_write(vop2, RK3588_DSC_8K_RST + ctrl_regs_offset, RST_DEASSERT_MASK,
 			RST_DEASSERT_SHIFT, 1, false);
 	udelay(10);
+	/* read current dsc core register and backup to regsbak */
+	backup_regs_offset = RK3588_DSC_8K_CTRL0;
+	vop2->regsbak[backup_regs_offset >> 2] = vop2_readl(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset);
 
-	val |= DSC_CTRL0_DEF_CON | (ilog2(cstate->dsc_slice_num) << DSC_NSLC_SHIFT) |
-	       ((dsc_sink_cap->version_minor == 2 ? 1 : 0) << DSC_IFEP_SHIFT);
-	vop2_writel(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, val);
-
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_EN_SHIFT, 1, false);
 	vop2_load_pps(state, vop2, dsc_id);
 
-	val |= (1 << DSC_PPS_UPD_SHIFT);
-	vop2_writel(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, val);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_RBIT_SHIFT, 1, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_RBYT_SHIFT, 0, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_FLAL_SHIFT, 1, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_MER_SHIFT, 1, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_EPB_SHIFT, 0, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_EPL_SHIFT, 1, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, DSC_NSLC_MASK,
+			DSC_NSLC_SHIFT, ilog2(cstate->dsc_slice_num), false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_SBO_SHIFT, 1, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_IFEP_SHIFT, dsc_sink_cap->version_minor == 2 ? 1 : 0, false);
+	vop2_mask_write(vop2, RK3588_DSC_8K_CTRL0 + decoder_regs_offset, EN_MASK,
+			DSC_PPS_UPD_SHIFT, 1, false);
 
 	printf("DSC%d: txp:%lld div:%d, pxl:%lld div:%d, dsc:%lld div:%d\n",
 	       dsc_id,
@@ -3174,8 +2958,6 @@ static int rockchip_vop2_init(struct display_state *state)
 
 	vop2_tv_config_update(state, vop2);
 	vop2_post_config(state, vop2);
-	if (cstate->feature & (VOP_FEATURE_POST_ACM | VOP_FEATURE_POST_CSC))
-		vop3_post_config(state, vop2);
 
 	if (cstate->dsc_enable) {
 		if (conn_state->output_flags & ROCKCHIP_OUTPUT_DUAL_CHANNEL_LEFT_RIGHT_MODE) {
