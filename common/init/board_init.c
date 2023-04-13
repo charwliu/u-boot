@@ -170,19 +170,6 @@ void board_init_f_init_reserve(ulong base)
 
 #if CONFIG_IS_ENABLED(SHOW_BOOT_PROGRESS)
 /*
- * Board-specific Platform code can init boot flags if needed
- */
-__weak int board_init_f_boot_flags(void)
-{
-	gd->baudrate = CONFIG_BAUDRATE;
-	gd->serial.baudrate = CONFIG_BAUDRATE;
-	gd->serial.addr = CONFIG_DEBUG_UART_BASE;
-	gd->serial.using_pre_serial = 0;
-
-	return 0;
-}
-
-/*
  * Board-specific Platform code can reimplement show_boot_progress () if needed
  */
 __weak void show_boot_progress(int val) {}

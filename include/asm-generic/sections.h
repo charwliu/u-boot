@@ -34,10 +34,6 @@ extern char __priv_data_start[], __priv_data_end[];
 /* Start and end of .ctors section - used for constructor calls. */
 extern char __ctors_start[], __ctors_end[];
 
-/* .ARM.exidx is sorted, so has to go in its own output section. */
-extern char __exidx_start[], __exidx_end[];
-extern char __extab_start[], __extab_end[];
-
 /* function descriptor handling (if any).  Override
  * in asm/sections.h */
 #ifndef dereference_function_descriptor

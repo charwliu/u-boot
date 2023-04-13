@@ -45,9 +45,6 @@ struct stdio_dev {
 #define STDIO_DEV_ASSIGN_FLUSH(dev, flush_func)
 #endif
 
-/* Clear functions */
-	void (*clear)(struct stdio_dev *dev);
-
 /* INPUT functions */
 
 	/* To test if a char is ready... */

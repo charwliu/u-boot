@@ -1324,10 +1324,6 @@ static void rkclk_init(struct rockchip_cru *cru)
 
 	rk3399_configure_cpu_l(cru, APLL_L_600_MHZ);
 	rk3399_configure_cpu_b(cru, APLL_B_600_MHZ);
-#ifdef CONFIG_VENDOR_FRIENDLYELEC
-    rk3399_saradc_set_clk(cru, 1000000);
-    rk3399_i2c_set_clk(cru, SCLK_I2C7, 50000000);
-#endif
 	/*
 	 * some cru registers changed by bootrom, we'd better reset them to
 	 * reset/default values described in TRM to avoid confusion in kernel.

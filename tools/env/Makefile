@@ -15,8 +15,6 @@ HOST_EXTRACFLAGS  = -I$(srctree)/tools \
 		-DUSE_HOSTCC \
 		-DTEXT_BASE=$(TEXT_BASE)
 
-HOSTLDFLAGS = -static
-
 ifeq ($(MTD_VERSION),old)
 HOST_EXTRACFLAGS += -DMTD_OLD
 endif

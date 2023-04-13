@@ -123,8 +123,4 @@ void crc32c_init(uint32_t *crc32c_table, uint32_t pol);
 uint32_t crc32c_cal(uint32_t crc, const char *data, int length,
 		    uint32_t *crc32c_table);
 
-/* lib/crc32c.c */
-void crc32c_init(uint32_t *, uint32_t);
-uint32_t crc32c_cal(uint32_t, const char *, int, uint32_t *);
-
 #endif /* _UBOOT_CRC_H */

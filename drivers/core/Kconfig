@@ -96,12 +96,6 @@ config SPL_DM_STATS
 
 	  The stats are displayed just before SPL boots to the next phase.
 
-config DM_DEBUG
-	bool "Enable debug messages in driver model core"
-	depends on DM
-	help
-	  Say Y here if you want to compile in debug messages in DM core.
-
 config DM_DEVICE_REMOVE
 	bool "Support device removal"
 	depends on DM

@@ -8,7 +8,6 @@
  */
 
 #define _GNU_SOURCE
-#define _LARGEFILE64_SOURCE     /* See feature_test_macros(7) */
 
 #include <compiler.h>
 #include <env.h>
@@ -85,7 +84,7 @@ static int dev_current;
 #define DEVTYPE(i)    envdevices[(i)].mtd_type
 #define IS_UBI(i)     envdevices[(i)].is_ubi
 
-#define CUR_ENVSIZE   ENVSIZE(dev_current)
+#define CUR_ENVSIZE ENVSIZE(dev_current)
 
 static unsigned long usable_envsize;
 #define ENV_SIZE      usable_envsize
@@ -861,29 +860,6 @@ off_t environment_end(int dev)
 	return DEVOFFSET(dev) + ENVSECTORS(dev) * DEVESIZE(dev);
 }
 
-/* Encrypt or decrypt the environment before writing or reading it. */
-static int env_aes_cbc_crypt(char *payload, const int enc, uint8_t *key)
-{
-	uint8_t *data = (uint8_t *)payload;
-	const int len = usable_envsize;
-	uint8_t key_exp[AES_EXPAND_KEY_LENGTH];
-	uint32_t aes_blocks;
-
-	/* First we expand the key. */
-	aes_expand_key(key, key_exp);
-
-	/* Calculate the number of AES blocks to encrypt. */
-	aes_blocks = DIV_ROUND_UP(len, AES_KEY_LENGTH);
-
-	if (enc)
-		aes_cbc_encrypt_blocks(key_exp, data, data, aes_blocks);
-	else
-		aes_cbc_decrypt_blocks(key_exp, data, data, aes_blocks);
-
-	return 0;
-}
-
-#if defined(CONFIG_ENV_IS_IN_NAND)
 /*
  * Test for bad block on NAND, just returns 0 on NOR, on NAND:
  * 0	- block is good
@@ -1432,94 +1408,6 @@ static int flash_io(int mode, void *buf, size_t count)
 
 	return rc;
 }
-#endif /* CONFIG_ENV_IS_IN_NAND */
-
-#if defined(CONFIG_ENV_IS_IN_MMC)
-static int flash_mmc (int mode)
-{
-	int fd, rc;
-	long long pos;
-	int size = ENVSIZE (dev_current);
-
-	if ((fd = open (DEVNAME (dev_current), mode)) < 0) {
-		fprintf (stderr,
-			"Can't open %s: %s\n",
-			DEVNAME (dev_current), strerror (errno));
-		return (-1);
-	}
-
-	pos = lseek64 (fd, (long long) DEVOFFSET (dev_current), SEEK_SET);
-	if (pos == -1) {
-		fprintf (stderr,
-			"seek error on %s: %s\n",
-			DEVNAME (dev_current), strerror (errno));
-		return (-1);
-	}
-
-	if (mode == O_RDWR) {
-		printf ("Writing environment to %s...\n", DEVNAME (dev_current));
-
-		if (write (fd, environment.image, size) != size) {
-			fprintf (stderr,
-				"Write error on %s: %s\n",
-				DEVNAME (dev_current), strerror (errno));
-			return (-1);
-		}
-
-		printf ("Done\n");
-
-	} else {
-
-		if ((rc = read (fd, environment.image, size)) != size) {
-			fprintf (stderr,
-				"Read error on %s: %s\n",
-				DEVNAME (dev_current), strerror (errno));
-			return (-1);
-		}
-	}
-
-	if (close (fd)) {
-		fprintf (stderr,
-			"I/O error on %s: %s\n",
-			DEVNAME (dev_current), strerror (errno));
-		return (-1);
-	}
-
-	/* everything ok */
-	return (0);
-}
-#endif
-
-static int flash_io (int mode)
-{
-#if defined(CONFIG_ENV_IS_IN_NAND)
-	return flash_mtd (mode);
-
-#elif defined(CONFIG_ENV_IS_IN_MMC)
-	return flash_mmc (mode);
-
-#else
-	/* failed */
-	return (-1);
-#endif
-}
-
-/*
- * Config device name for read/write env on host, and
- * it should be called before fw_env_open() -> parse_config()
- */
-static const char *env_device = DEVICE1_NAME;
-
-int fw_set_device(const char *device)
-{
-	if (device)
-		env_device = device;
-
-#ifdef DEBUG
-	fprintf(stderr, "Using device %s\n", env_device);
-#endif
-	return 0;
-}
 
 /*
  * Prevent confusion if running from erased flash memory
@@ -1724,7 +1612,6 @@ int fw_env_close(struct env_opts *opts)
 	return 0;
 }
 
-#ifndef CONFIG_ENV_IS_IN_MMC
 static int check_device_config(int dev)
 {
 	struct stat st;
@@ -1828,7 +1715,6 @@ static int check_device_config(int dev)
 	close(fd);
 	return rc;
 }
-#endif
 
 static int find_nvmem_device(void)
 {
@@ -1901,11 +1787,7 @@ static int find_nvmem_device(void)
 
 static int parse_config(struct env_opts *opts)
 {
-#if defined(CONFIG_ENV_IS_IN_MMC)
-	struct stat st;
-#else
 	int rc;
-#endif
 
 	if (!opts)
 		opts = &default_opts;
@@ -1952,22 +1834,6 @@ static int parse_config(struct env_opts *opts)
 	have_redund_env = 1;
 #endif
 #endif
-
-#if defined(CONFIG_ENV_IS_IN_MMC)
-	if (stat (DEVNAME (0), &st)) {
-		fprintf (stderr,
-			"Cannot access ENV device %s: %s\n",
-			DEVNAME (0), strerror (errno));
-		return -1;
-	}
-
-	if (HaveRedundEnv && stat (DEVNAME (1), &st)) {
-		fprintf (stderr,
-			"Cannot access ENV device %s: %s\n",
-			DEVNAME (1), strerror (errno));
-		return -1;
-	}
-#else
 	rc = check_device_config(0);
 	if (rc < 0)
 		return rc;
@@ -1983,7 +1849,6 @@ static int parse_config(struct env_opts *opts)
 			return -1;
 		}
 	}
-#endif
 
 	usable_envsize = CUR_ENVSIZE - sizeof(uint32_t);
 	if (have_redund_env)

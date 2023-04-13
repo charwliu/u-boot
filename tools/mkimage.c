@@ -705,7 +705,7 @@ int main(int argc, char **argv)
 			if (ret)
 				return ret;
 		} else if ((params.type == IH_TYPE_RKSD) ||
-                    (params.type == IH_TYPE_RKSPI)) {
+				(params.type == IH_TYPE_RKSPI)) {
 			/* Rockchip has special Image format */
 			int ret;
 

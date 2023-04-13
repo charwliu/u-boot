@@ -13,11 +13,3 @@ UCLASS_DRIVER(firmware) = {
 	.post_bind	= dm_scan_fdt_dev,
 #endif
 };
-
-U_BOOT_DRIVER(firmware) = {
-	.name	= "firmware",
-	.id	= UCLASS_FIRMWARE,
-#if !CONFIG_IS_ENABLED(OF_PLATDATA)
-	.bind = dm_scan_fdt_dev,
-#endif
-};

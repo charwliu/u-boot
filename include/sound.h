@@ -150,14 +150,4 @@ int sound_stop_beep(struct udevice *dev);
  */
 int sound_find_codec_i2s(struct udevice *dev);
 
-struct snd_soc_dai_ops {
-	int (*hw_params)(struct udevice *dev, unsigned int samplerate,
-			 unsigned int fmt, unsigned int channels);
-	int (*startup)(struct udevice *dev);
-	int (*shutdown)(struct udevice *dev);
-	int (*transfer)(struct udevice *dev, unsigned int *data,
-			unsigned long data_size);
-	int (*set_sysclk)(struct udevice *dev, unsigned int freq);
-};
-
 #endif  /* __SOUND__H__ */

@@ -153,16 +153,6 @@ static int sandbox_spi_get_mmap(struct udevice *dev, ulong *map_basep,
 	return 0;
 }
 
-static int sandbox_spi_get_mmap(struct udevice *dev, ulong *map_basep,
-				uint *map_sizep, uint *offsetp)
-{
-	*map_basep = 0x1000;
-	*map_sizep = 0x2000;
-	*offsetp = 0x100;
-
-	return 0;
-}
-
 static const struct dm_spi_ops sandbox_spi_ops = {
 	.xfer		= sandbox_spi_xfer,
 	.set_speed	= sandbox_spi_set_speed,

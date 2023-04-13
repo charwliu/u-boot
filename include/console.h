@@ -134,11 +134,6 @@ static inline int console_in_puts(const char *str)
 #endif /* !CONFIG_CONSOLE_RECORD */
 
 /**
- * console_record_print_purge() - print record data and remove data from buffers
- */
-void console_record_print_purge(void);
-
-/**
  * console_announce_r() - print a U-Boot console on non-serial consoles
  *
  * When U-Boot starts up with a display it generally does not announce itself

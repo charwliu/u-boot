@@ -834,7 +834,6 @@ static int fit_config_get_hash_list(const void *fit, int conf_noffset,
 	strlist_init(node_inc);
 	snprintf(name, sizeof(name), "%s/%s", FIT_CONFS_PATH, conf_name);
 	if (strlist_add(node_inc, "/") ||
-	    strlist_add(node_inc, FIT_CONFS_PATH) ||
 	    strlist_add(node_inc, name))
 		goto err_mem;
 
@@ -1041,6 +1040,10 @@ static int fit_config_process_sig(const char *keydir, const char *keyfile,
 	if (ret) {
 		printf("Failed to sign '%s' signature node in '%s' conf node\n",
 		       node_name, conf_name);
+
+		/* We allow keys to be missing */
+		if (ret == -ENOENT)
+			return 0;
 		return -1;
 	}
 

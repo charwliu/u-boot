@@ -393,9 +393,6 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
 	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[0],
 		sizeof(ctrl->dcbaa->dev_context_ptrs[0]));
 
-	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[0],
-		sizeof(ctrl->dcbaa->dev_context_ptrs[0]));
-
 	page_size = xhci_readl(&hcor->or_pagesize) & 0xffff;
 	for (i = 0; i < 16; i++) {
 		if ((0x1 & page_size) != 0)

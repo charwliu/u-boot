@@ -241,10 +241,6 @@ int do_ut_overlay(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 	if (!fdt_overlay_stacked_copy)
 		goto err3;
 
-	fdt_overlay_stacked_copy = malloc(FDT_COPY_SIZE);
-	if (!fdt_overlay_stacked_copy)
-		return -ENOMEM;
-
 	/*
 	 * Resize the FDT to 4k so that we have room to operate on
 	 *

@@ -427,7 +427,6 @@ sub read_all_maintainer_files {
     foreach my $file (@mfiles) {
 	read_maintainer_file("$file");
     }
-    close($maint);
 }
 
 sub maintainers_in_file {

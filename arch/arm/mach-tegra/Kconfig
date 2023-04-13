@@ -59,7 +59,6 @@ config TEGRA_COMMON
 	select DM_SPI
 	select DM_SPI_FLASH
 	select MISC
-	select SPI
 	select OF_CONTROL
 	select SPI
 	imply CMD_DM

@@ -36,7 +36,6 @@ int cleanup_before_linux_select(int flags)
 #ifndef CONFIG_SPL_BUILD
 	disable_interrupts();
 #endif
-	disable_async_abort();
 
 	if (flags & CBL_DISABLE_CACHES) {
 		/*

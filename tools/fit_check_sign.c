@@ -47,7 +47,6 @@ int main(int argc, char **argv)
 	int ret;
 	void *key_blob;
 	int c;
-	int is_spl = 0;
 
 	strncpy(cmdname, *argv, sizeof(cmdname) - 1);
 	cmdname[sizeof(cmdname) - 1] = '\0';

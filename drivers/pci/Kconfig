@@ -374,12 +374,4 @@ config PCIE_UNIPHIER
 	  Say Y here if you want to enable PCIe controller support on
 	  UniPhier SoCs.
 
-config PCIE_DW_ROCKCHIP
-	bool "Rockchip DesignWare PCIe controller"
-	depends on DM_PCI
-	depends on ARCH_ROCKCHIP
-	select CONFIG_DM_REGULATOR_GPIO
-	help
-	  Enables support for the DW PCIe controller in the Rockchip SoC.
-
 endif

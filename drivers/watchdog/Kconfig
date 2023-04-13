@@ -359,10 +359,4 @@ config SPL_WDT
 	  Enable driver model for watchdog timer in SPL.
 	  This is similar to CONFIG_WDT in U-Boot.
 
-config ROCKCHIP_WATCHDOG
-	bool "Rockchip watchdog"
-	depends on WDT && ARCH_ROCKCHIP
-	help
-	  Say Y here to enable Rockchip watchdog driver.
-
 endmenu

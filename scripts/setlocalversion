@@ -86,8 +86,6 @@ scm_version()
 			printf '%s' -dirty
 		fi
 
-		printf ' \#%s' $USER
-
 		# All done with git
 		return
 	fi

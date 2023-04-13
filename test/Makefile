@@ -23,7 +23,6 @@ endif
 obj-$(CONFIG_$(SPL_)CMDLINE) += print_ut.o
 obj-$(CONFIG_$(SPL_)CMDLINE) += str_ut.o
 obj-$(CONFIG_UT_TIME) += time_ut.o
-obj-$(CONFIG_TEST_ROCKCHIP) += rockchip/
 obj-y += ut.o
 
 ifeq ($(CONFIG_SPL_BUILD),)

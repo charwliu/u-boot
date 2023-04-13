@@ -11,7 +11,7 @@
 #include <asm/arch-rockchip/cru.h>
 #include <linux/err.h>
 
-int rockchip_get_clk(struct udevice **devp)
+static int rockchip_get_cruclk(struct udevice **devp)
 {
 	return uclass_get_device_by_driver(UCLASS_CLK,
 			DM_DRIVER_GET(clk_rk3399), devp);
@@ -23,7 +23,7 @@ void *rockchip_get_cru(void)
 	struct udevice *dev;
 	int ret;
 
-	ret = rockchip_get_clk(&dev);
+	ret = rockchip_get_cruclk(&dev);
 	if (ret)
 		return ERR_PTR(ret);
 

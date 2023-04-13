@@ -97,7 +97,7 @@ struct header0_info {
 };
 
 /**
- * struct header1 info
+ * struct header1_info
  */
 struct header1_info {
 	uint32_t magic;

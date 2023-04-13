@@ -20,10 +20,4 @@
 #define CFG_SYS_TIMER_COUNTER	(TMU_BASE + 0xc)	/* TCNT0 */
 #define CFG_SYS_TIMER_RATE		(get_board_sys_clk() / 8)
 
-/* SF MTD */
-#if defined(CONFIG_SPI_FLASH_MTD) && !defined(CONFIG_SPL_BUILD)
-#else
-#undef CONFIG_SPI_FLASH_MTD
-#endif
-
 #endif	/* __RCAR_GEN2_COMMON_H */

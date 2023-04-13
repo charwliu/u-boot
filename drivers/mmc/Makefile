@@ -5,7 +5,6 @@
 
 obj-y += mmc.o
 obj-$(CONFIG_$(SPL_)DM_MMC) += mmc-uclass.o
-obj-$(CONFIG_$(SPL_)MMC_WRITE) += mmc_write.o
 
 ifdef CONFIG_$(SPL_TPL_)DM_MMC
 obj-$(CONFIG_$(SPL_TPL_)BOOTSTD) += mmc_bootdev.o
