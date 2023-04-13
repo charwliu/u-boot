@@ -257,7 +257,7 @@ int uclass_find_device_by_phandle(enum uclass_id id, struct udevice *parent,
  * @dev:	Pointer to the device
  * Return: 0 on success, -ve on error
  */
-int uclass_bind_device(struct udevice *dev, bool after_u_boot_dev);
+int uclass_bind_device(struct udevice *dev);
 
 #if CONFIG_IS_ENABLED(DM_DEVICE_REMOVE)
 /**

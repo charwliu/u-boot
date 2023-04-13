@@ -84,26 +84,6 @@ config CC_OPTIMIZE_FOR_SIZE
 
 	  This option is enabled by default for U-Boot.
 
-config DISTRO_DEFAULTS
-	bool "Select defaults suitable for booting general purpose Linux distributions"
-	default y if ARCH_SUNXI || TEGRA
-	default y if ARCH_LS2080A
-	default y if ARCH_MESON
-	default y if ARCH_ROCKCHIP
-	default n
-	select CMD_BOOTZ if ARM && !ARM64
-	select CMD_BOOTI if ARM64
-	select CMD_DHCP
-	imply CMD_PXE
-	select CMD_EXT2
-	select CMD_EXT4
-	select CMD_FAT
-	select CMD_FS_GENERIC
-	imply CMD_MII
-	select CMD_PING
-	select CMD_PART
-	select HUSH_PARSER
-
 config CC_OPTIMIZE_FOR_SPEED
 	bool "Optimize for speed"
 	help
@@ -376,7 +356,7 @@ menuconfig EXPERT
 if EXPERT
 	config SYS_MALLOC_CLEAR_ON_INIT
 	bool "Init with zeros the memory reserved for malloc (slow)"
-	default y if !ARCH_ROCKCHIP
+	default y
 	help
 	  This setting is enabled by default. The reserved malloc
 	  memory is initialized with zeros, so first malloc calls

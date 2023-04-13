@@ -48,8 +48,6 @@ int cleanup_before_linux(void)
 
 	disable_interrupts();
 
-	disable_serror();
-
 	/*
 	 * Turn off I-cache and invalidate it
 	 */

@@ -136,9 +136,6 @@ int do_bootm(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 		relocated = 1;
 	}
 #endif
-	/* board routines */
-	if (board_do_bootm(argc, argv))
-		return -EPERM;
 
 	/* determine if we have a sub command */
 	argc--; argv++;

@@ -24,8 +24,6 @@
 
 static struct legacy_img_hdr header;
 
-#define ALIGN(x, a)	(((x) + (a) - 1) & ~((a) - 1))
-
 /* Resize the fdt to its actual size + a bit of padding */
 static int fdt_shrink_to_minimum(void *blob, uint extrasize)
 {
@@ -753,7 +751,7 @@ static int fit_import_data(struct image_tool_params *params, const char *fname)
 		debug("%s: Failed to write external data to file %s\n",
 		      __func__, strerror(errno));
 		ret = -EIO;
-		goto err_has_fd;
+		goto err;
 	}
 
 	free(fdt);
@@ -765,9 +763,6 @@ err_munmap:
 err:
 	free(fdt);
 	close(fd);
-err_no_fd:
-	munmap(old_fdt, sbuf.st_size);
-	free(fdt);
 	return ret;
 }
 

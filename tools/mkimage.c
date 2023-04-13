@@ -357,21 +357,13 @@ static void process_args(int argc, char **argv)
 			}
 			break;
 		case 'v':
-			params.vflag = strtoull(optarg, &ptr, 10);
-			if (*ptr) {
-				fprintf(stderr, "%s: invalid version length %s\n",
-					params.cmdname, optarg);
-				exit(EXIT_FAILURE);
-			}
+			params.vflag++;
 			break;
 		case 'V':
 			printf("mkimage version %s\n", PLAIN_VERSION);
 			exit(EXIT_SUCCESS);
 		case 'x':
 			params.xflag++;
-			break;
-		case 'X':
-			params.extraparams = optarg;
 			break;
 		default:
 			usage("Invalid option");
@@ -607,8 +599,7 @@ int main(int argc, char **argv)
 		exit (retval);
 	}
 
-	if ((params.type != IH_TYPE_MULTI) && (params.type != IH_TYPE_SCRIPT) &&
-	    (params.type != IH_TYPE_RKNAND)) {
+	if ((params.type != IH_TYPE_MULTI) && (params.type != IH_TYPE_SCRIPT)) {
 		dfd = open(params.datafile, O_RDONLY | O_BINARY);
 		if (dfd < 0) {
 			fprintf(stderr, "%s: Can't open %s: %s\n",
@@ -667,7 +658,7 @@ int main(int argc, char **argv)
 					}
 					size = cpu_to_uimage (sbuf.st_size);
 				} else {
-					size = IMAGE_PARAM_INVAL;
+					size = 0;
 				}
 
 				if (write(ifd, (char *)&size, sizeof(size)) != sizeof(size)) {
@@ -714,8 +705,7 @@ int main(int argc, char **argv)
 			if (ret)
 				return ret;
 		} else if ((params.type == IH_TYPE_RKSD) ||
-                    (params.type == IH_TYPE_RKSPI) ||
-                    (params.type == IH_TYPE_RKNAND)) {
+                    (params.type == IH_TYPE_RKSPI)) {
 			/* Rockchip has special Image format */
 			int ret;
 
