@@ -1,20 +1,29 @@
-// SPDX-License-Identifier: GPL-2.0
 /*
  * (C) Copyright 2020 Rockchip Electronics Co., Ltd.
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
 #include <dm.h>
 #include <syscon.h>
+#include <linux/err.h>
 #include <asm/arch-rockchip/clock.h>
 #include <asm/arch-rockchip/cru_rk3588.h>
-#include <linux/err.h>
 
 int rockchip_get_clk(struct udevice **devp)
 {
 	return uclass_get_device_by_driver(UCLASS_CLK,
 			DM_DRIVER_GET(rockchip_rk3588_cru), devp);
 }
+
+#if IS_ENABLED(CONFIG_CLK_SCMI)
+int rockchip_get_scmi_clk(struct udevice **devp)
+{
+	return uclass_get_device_by_driver(UCLASS_CLK,
+			DM_DRIVER_GET(scmi_clock), devp);
+}
+#endif
 
 void *rockchip_get_cru(void)
 {
@@ -30,3 +39,4 @@ void *rockchip_get_cru(void)
 
 	return priv->cru;
 }
+

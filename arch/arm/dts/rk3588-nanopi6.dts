@@ -8,11 +8,14 @@
 
 /dts-v1/;
 #include "rk3588.dtsi"
-#include "rk3588-u-boot.dtsi"
-#include <dt-bindings/input/input.h>
 
 / {
-    model = "FriendlyElec boards based on Rockchip RK3588";
-    compatible = "friendlyelec,nanopi6",
+	model = "FriendlyElec boards based on Rockchip RK3588";
+	compatible = "friendlyelec,nanopi6",
              "rockchip,rk3588";
+
+	chosen {
+                stdout-path = "serial2:1500000n8";
+        };
 };
+

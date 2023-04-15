@@ -7,7 +7,7 @@ config SYS_VENDOR
 	default "rockchip"
 
 config SYS_CONFIG_NAME
-	default "nanopi6"
+	default "nanopi6-rk3588"
 
 config BOARD_SPECIFIC_OPTIONS
 	def_bool y

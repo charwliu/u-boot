@@ -713,6 +713,7 @@ bool spl_was_boot_source(void);
  */
 int spl_dfu_cmd(int usbctrl, char *dfu_alt_info, char *interface, char *devstr);
 
+int spl_mmc_find_device(struct mmc **mmcp, u32 boot_device);
 int spl_mmc_load_image(struct spl_image_info *spl_image,
 		       struct spl_boot_device *bootdev);
 
