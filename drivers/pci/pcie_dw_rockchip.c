@@ -354,15 +354,22 @@ static int rockchip_pcie_parse_dt(struct udevice *dev)
 	struct rk_pcie *priv = dev_get_priv(dev);
 	int ret;
 
-	priv->dw.dbi_base = (void *)dev_read_addr_index(dev, 0);
-	if (!priv->dw.dbi_base)
-		return -ENODEV;
+	priv->dw.dbi_base = (void *)dev_read_addr_name(dev, "dbi");
+	if ((fdt_addr_t)priv->dw.dbi_base == FDT_ADDR_T_NONE)
+		return -EINVAL;
 
 	dev_dbg(dev, "DBI address is 0x%p\n", priv->dw.dbi_base);
 
-	priv->apb_base = (void *)dev_read_addr_index(dev, 1);
-	if (!priv->apb_base)
-		return -ENODEV;
+	priv->dw.cfg_base = (void *)dev_read_addr_size_name(dev, "config",
+							    &priv->dw.cfg_size);
+	if ((fdt_addr_t)priv->dw.cfg_base == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	dev_dbg(dev, "CFG address is 0x%p\n", priv->dw.cfg_base);
+
+	priv->apb_base = (void *)dev_read_addr_name(dev, "apb");
+	if ((fdt_addr_t)priv->apb_base == FDT_ADDR_T_NONE)
+		return -EINVAL;
 
 	dev_dbg(dev, "APB address is 0x%p\n", priv->apb_base);
 
