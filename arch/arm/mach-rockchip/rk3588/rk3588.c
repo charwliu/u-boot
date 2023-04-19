@@ -8,7 +8,9 @@
 #include <misc.h>
 #include <mmc.h>
 #include <spl.h>
+#include <asm/armv8/mmu.h>
 #include <asm/io.h>
+#include <asm/arch-rockchip/bootrom.h>
 #include <asm/arch-rockchip/hardware.h>
 #include <asm/arch-rockchip/ioc_rk3588.h>
 #include <dt-bindings/clock/rockchip,rk3588-cru.h>
@@ -27,6 +29,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define FW_SYSM_MST21_REG		0x94
 #define FW_SYSM_MST26_REG		0xa8
 #define FW_SYSM_MST27_REG		0xac
+
 #define SYS_GRF_BASE			0xfd58c000
 #define SYS_GRF_SOC_CON6		0x0318
 #define USBGRF_BASE			0xfd5ac000
@@ -74,8 +77,12 @@ DECLARE_GLOBAL_DATA_PTR;
 #define HDMIRX_NODE_FDT_PATH		"/hdmirx-controller@fdee0000"
 #define RK3588_PHY_CONFIG		0xfdee00c0
 
-#ifdef CONFIG_ARM64
-#include <asm/armv8/mmu.h>
+
+const char * const boot_devices[BROM_LAST_BOOTSOURCE + 1] = {
+	[BROM_BOOTSOURCE_EMMC] = "/mmc@fe2e0000",
+	[BROM_BOOTSOURCE_SPINOR] = "/spi@fe2b0000/flash@0",
+	[BROM_BOOTSOURCE_SD] = "/mmc@fe2c0000",
+};
 
 static struct mm_region rk3588_mem_map[] = {
 	{
@@ -105,7 +112,6 @@ static struct mm_region rk3588_mem_map[] = {
 };
 
 struct mm_region *mem_map = rk3588_mem_map;
-#endif
 
 /* GPIO0B_IOMUX_SEL_L */
 enum {
