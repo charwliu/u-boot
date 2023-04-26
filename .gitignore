@@ -36,6 +36,7 @@
 
 # Build tree
 /build-*
+/build
 
 #
 # Top-level generic files
@@ -108,3 +109,4 @@ __pycache__
 
 # moveconfig database
 /moveconfig.db
+/simple-bin*
