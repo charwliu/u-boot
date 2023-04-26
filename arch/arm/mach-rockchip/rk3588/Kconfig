@@ -38,6 +38,14 @@ config TARGET_ROCK5B_RK3588
 	  USB PD over USB Type-C
 	  Size: 85mm x 54mm
 
+config TARGET_NANOPI6_RK3588
+        bool "FriendlyElec NanoPi 6 Series"
+        select BOARD_LATE_INIT
+        select VENDOR_FRIENDLYELEC
+        help
+          Support for FriendlyElec boards based on RK3588.
+
+
 config ROCKCHIP_BOOT_MODE_REG
 	default 0xfd588080
 
@@ -52,5 +60,6 @@ config SYS_MALLOC_F_LEN
 
 source board/edgeble/neural-compute-module-6/Kconfig
 source board/radxa/rock5b-rk3588/Kconfig
+source board/friendlyelec/nanopi6-rk3588/Kconfig
 
 endif
