@@ -5,6 +5,8 @@
 
 #include <phy_interface.h>
 #include <linux/bitops.h>
+#include <asm/gpio.h>
+#include <reset.h>
 
 /* Core registers */
 
@@ -286,6 +288,15 @@ void eqos_flush_desc_generic(void *desc);
 void eqos_inval_buffer_generic(void *buf, size_t size);
 void eqos_flush_buffer_generic(void *buf, size_t size);
 int eqos_null_ops(struct udevice *dev);
+
+int eqos_init(struct udevice *dev);
+void eqos_enable(struct udevice *dev);
+int eqos_probe(struct udevice *dev);
+void eqos_stop(struct udevice *dev);
+int eqos_send(struct udevice *dev, void *packet, int length);
+int eqos_recv(struct udevice *dev, int flags, uchar **packetp);
+int eqos_free_pkt(struct udevice *dev, uchar *packet, int length);
+int eqos_write_hwaddr(struct udevice *dev);
 
 extern struct eqos_config eqos_imx_config;
 extern struct eqos_config eqos_qcom_config;

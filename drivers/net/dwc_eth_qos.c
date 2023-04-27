@@ -662,7 +662,7 @@ static int eqos_adjust_link(struct udevice *dev)
 	return 0;
 }
 
-static int eqos_write_hwaddr(struct udevice *dev)
+int eqos_write_hwaddr(struct udevice *dev)
 {
 	struct eth_pdata *plat = dev_get_plat(dev);
 	struct eqos_priv *eqos = dev_get_priv(dev);
@@ -737,7 +737,7 @@ static int eqos_get_phy_addr(struct eqos_priv *priv, struct udevice *dev)
 	return reg;
 }
 
-static int eqos_init(struct udevice *dev)
+int eqos_init(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	int ret;
@@ -841,7 +841,7 @@ err:
         return ret;
 }
 
-static void eqos_enable(struct udevice *dev)
+void eqos_enable(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
@@ -1098,7 +1098,7 @@ static int eqos_start(struct udevice *dev)
 }
 
 
-static void eqos_stop(struct udevice *dev)
+void eqos_stop(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	int i;
@@ -1151,7 +1151,7 @@ static void eqos_stop(struct udevice *dev)
 	debug("%s: OK\n", __func__);
 }
 
-static int eqos_send(struct udevice *dev, void *packet, int length)
+int eqos_send(struct udevice *dev, void *packet, int length)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	struct eqos_desc *tx_desc;
@@ -1193,7 +1193,7 @@ static int eqos_send(struct udevice *dev, void *packet, int length)
 	return -ETIMEDOUT;
 }
 
-static int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
+int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	struct eqos_desc *rx_desc;
@@ -1218,7 +1218,7 @@ static int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
 	return length;
 }
 
-static int eqos_free_pkt(struct udevice *dev, uchar *packet, int length)
+int eqos_free_pkt(struct udevice *dev, uchar *packet, int length)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	u32 idx, idx_mask = eqos->desc_per_cacheline - 1;
@@ -1535,7 +1535,7 @@ static int eqos_remove_resources_stm32(struct udevice *dev)
 	return 0;
 }
 
-static int eqos_probe(struct udevice *dev)
+int eqos_probe(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	int ret;
