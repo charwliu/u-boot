@@ -10,12 +10,12 @@
 
 / {
 	aliases {
-		mmc0 = &sdmmc;
-		mmc1 = &sdhci;
+		mmc0 = &sdhci;
+		mmc1 = &sdmmc;
 	};
 
 	chosen {
-		u-boot,spl-boot-order = &sdmmc, &sdhci, &flash0;
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &sdhci, &flash0;
 	};
 
 	vcc5v0_host: vcc5v0-host-regulator {
@@ -43,21 +43,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie2x1l2_pins &pcie_reset_h>;
 	reset-gpios = <&gpio3 RK_PB0 GPIO_ACTIVE_HIGH>;
-	status = "okay";
-};
-
-&sdmmc {
-	bus-width = <4>;
-	bootph-all;
-	u-boot,spl-fifo-mode;
-	status = "okay";
-};
-
-&sdhci {
-	bus-width = <8>;
-	bootph-all;
-	mmc-hs400-1_8v;
-	non-removable;
 	status = "okay";
 };
 
@@ -90,6 +75,11 @@
 	bootph-all;
 };
 
+&sdmmc {
+	bus-width = <4>;
+	status = "okay";
+};
+
 &sdmmc_bus4 {
 	bootph-all;
 };
@@ -104,6 +94,30 @@
 
 &sdmmc_det {
 	bootph-all;
+};
+
+&sdhci {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_data_strobe &emmc_rstnout>;
+};
+
+&sfc {
+	bootph-all;
+	pinctrl-0 = <&fspim2_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	flash0: flash@0 {
+		bootph-all;
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+	};
 };
 
 &usb_host0_ehci {
@@ -170,7 +184,7 @@
 	pinctrl-names = "default";
 	status = "okay";
 
-	flash0: flash@0 {
+	flash@0 {
 		bootph-all;
 		compatible = "jedec,spi-nor";
 		reg = <0>;

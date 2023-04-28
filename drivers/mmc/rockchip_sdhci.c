@@ -4,7 +4,7 @@
  *
  * Rockchip SD Host Controller Interface
  */
-#define DEBUG
+
 #include <common.h>
 #include <clk.h>
 #include <dm.h>
@@ -216,100 +216,6 @@ static void rk3399_emmc_phy_power_off(struct rockchip_emmc_phy *phy)
 	writel(RK_CLRSETBITS(1 << 1, 0), &phy->emmcphy_con[6]);
 }
 
-static int rockchip_emmc_set_clock(struct sdhci_host *host, unsigned int clock)
-{
-	unsigned int div, clk = 0, timeout;
-	unsigned int input_clk;
-	struct rockchip_sdhc *priv =
-			container_of(host, struct rockchip_sdhc, host);
-
-	/* Wait max 20 ms */
-	timeout = 200;
-	while (sdhci_readl(host, SDHCI_PRESENT_STATE) &
-			   (SDHCI_CMD_INHIBIT | SDHCI_DATA_INHIBIT)) {
-		if (timeout == 0) {
-			printf("%s: Timeout to wait cmd & data inhibit\n",
-			       __func__);
-			return -EBUSY;
-		}
-
-		timeout--;
-		udelay(100);
-	}
-	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
-
-	if (clock == 0)
-		return 0;
-
-	input_clk = clk_set_rate(&priv->emmc_clk, clock);
-	if (IS_ERR_VALUE(input_clk))
-		input_clk = host->max_clk;
-
-	if (SDHCI_GET_VERSION(host) >= SDHCI_SPEC_300) {
-		/*
-		 * Check if the Host Controller supports Programmable Clock
-		 * Mode.
-		 */
-		if (host->clk_mul) {
-			for (div = 1; div <= 1024; div++) {
-				if ((input_clk / div) <= clock)
-					break;
-			}
-
-			/*
-			 * Set Programmable Clock Mode in the Clock
-			 * Control register.
-			 */
-			clk = SDHCI_PROG_CLOCK_MODE;
-			div--;
-		} else {
-			/* Version 3.00 divisors must be a multiple of 2. */
-			if (input_clk <= clock) {
-				div = 1;
-			} else {
-				for (div = 2;
-				     div < SDHCI_MAX_DIV_SPEC_300;
-				     div += 2) {
-					if ((input_clk / div) <= clock)
-						break;
-				}
-			}
-			div >>= 1;
-		}
-	} else {
-		/* Version 2.00 divisors must be a power of 2. */
-		for (div = 1; div < SDHCI_MAX_DIV_SPEC_200; div *= 2) {
-			if ((input_clk / div) <= clock)
-				break;
-		}
-		div >>= 1;
-	}
-
-	clk |= (div & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
-	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
-		<< SDHCI_DIVIDER_HI_SHIFT;
-	clk |= SDHCI_CLOCK_INT_EN;
-	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
-
-	/* Wait max 20 ms */
-	timeout = 20;
-	while (!((clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL))
-		& SDHCI_CLOCK_INT_STABLE)) {
-		if (timeout == 0) {
-			printf("%s: Internal clock never stabilised.\n",
-			       __func__);
-			return -EBUSY;
-		}
-		timeout--;
-		udelay(1000);
-	}
-	clk |= SDHCI_CLOCK_CARD_EN;
-	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
-	host->clock = clock;
-
-	return 0;
-}
-
 static int rk3399_emmc_get_phy(struct udevice *dev)
 {
 	struct rockchip_sdhc *priv = dev_get_priv(dev);
@@ -389,24 +295,6 @@ static int rk3399_sdhci_set_ios_post(struct sdhci_host *host)
 	return 0;
 }
 
-<<<<<<< HEAD
-static int rk3568_emmc_phy_init(struct udevice *dev)
-{
-	struct rockchip_sdhc *prv = dev_get_priv(dev);
-	struct sdhci_host *host = &prv->host;
-	u32 extra;
-
-	extra = DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
-	sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_RXCLK);
-
-	return 0;
-}
-
-static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int clock)
-{
-	struct rockchip_sdhc *priv = container_of(host, struct rockchip_sdhc, host);
-	struct sdhci_data *data = (struct sdhci_data *)dev_get_driver_data(priv->dev);
-=======
 static void rk3568_sdhci_set_clock(struct sdhci_host *host, u32 div)
 {
 	struct rockchip_sdhc *priv = container_of(host, struct rockchip_sdhc, host);
@@ -423,16 +311,11 @@ static int rk3568_sdhci_config_dll(struct sdhci_host *host, u32 clock, bool enab
 	struct rockchip_sdhc *priv = container_of(host, struct rockchip_sdhc, host);
 	struct sdhci_data *data = (struct sdhci_data *)dev_get_driver_data(priv->dev);
 	struct mmc *mmc = host->mmc;
->>>>>>> radxa/2023.07-rc1-rock5b
 	int val, ret;
 	u32 extra, txclk_tapnum;
 
-<<<<<<< HEAD
-	ret = rockchip_emmc_set_clock(host, clock);
-=======
 	if (!enable)
 		return 0;
->>>>>>> radxa/2023.07-rc1-rock5b
 
 	if (clock >= 100 * MHz) {
 		/* reset DLL */
@@ -452,15 +335,9 @@ static int rk3568_sdhci_config_dll(struct sdhci_host *host, u32 clock, bool enab
 		if (ret)
 			return ret;
 
-<<<<<<< HEAD
-		extra = DWCMSHC_EMMC_DLL_DLYENA;
-		if (data->flags & RK_RXCLK_NO_INVERTER)
-			extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
-=======
 		extra = DWCMSHC_EMMC_DLL_DLYENA | DLL_RXCLK_ORI_GATE;
 		if (data->flags & FLAG_INVERTER_FLAG_IN_RXCLK)
 			extra |= DLL_RXCLK_NO_INVERTER;
->>>>>>> radxa/2023.07-rc1-rock5b
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_RXCLK);
 
 		txclk_tapnum = data->hs200_txclk_tapnum;
@@ -507,38 +384,10 @@ static int rk3568_sdhci_config_dll(struct sdhci_host *host, u32 clock, bool enab
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
 	}
 
-	return ret;
-}
-
-<<<<<<< HEAD
-static int dwcmshc_emmc_get_phy(struct udevice *dev)
-{
-        return 0;
-}
-
-static int rk3568_sdhci_set_enhanced_strobe(struct sdhci_host *host)
-{
-	struct mmc *mmc = host->mmc;
-	u32 vendor;
-	int reg;
-
-	reg = (sdhci_readl(host, DWCMSHC_P_VENDOR_AREA1) & DWCMSHC_AREA1_MASK)
-	      + DWCMSHC_EMMC_CONTROL;
-
-	vendor = sdhci_readl(host, reg);
-	if (mmc->selected_mode == MMC_HS_400_ES)
-		vendor |= DWCMSHC_ENHANCED_STROBE;
-	else
-		vendor &= ~DWCMSHC_ENHANCED_STROBE;
-	sdhci_writel(host, vendor, reg);
-
 	return 0;
 }
 
-static int dwcmshc_sdhci_set_ios_post(struct sdhci_host *host)
-=======
 static int rk3568_sdhci_set_ios_post(struct sdhci_host *host)
->>>>>>> radxa/2023.07-rc1-rock5b
 {
 	struct mmc *mmc = host->mmc;
 	u32 reg;
@@ -546,13 +395,6 @@ static int rk3568_sdhci_set_ios_post(struct sdhci_host *host)
 	reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
 	reg &= ~SDHCI_CTRL_UHS_MASK;
 
-<<<<<<< HEAD
-	dwcmshc_sdhci_emmc_set_clock(host, clock);
-
-	if (mmc->selected_mode == MMC_HS_400 || mmc->selected_mode == MMC_HS_400_ES) {
-		reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
-		reg &= ~SDHCI_CTRL_UHS_MASK;
-=======
 	switch (mmc->selected_mode) {
 	case UHS_SDR25:
 	case MMC_HS:
@@ -572,7 +414,6 @@ static int rk3568_sdhci_set_ios_post(struct sdhci_host *host)
 		break;
 	case MMC_HS_400:
 	case MMC_HS_400_ES:
->>>>>>> radxa/2023.07-rc1-rock5b
 		reg |= DWCMSHC_CTRL_HS400;
 		break;
 	default:
@@ -717,7 +558,6 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 	struct clk clk;
 	int ret;
 
-	printf("%s: ** begin probe %s ... \n", __func__, dev->name);
 	host->max_clk = cfg->f_max;
 	ret = clk_get_by_index(dev, 0, &clk);
 	if (!ret) {
@@ -736,7 +576,6 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 		if (ret)
 			return ret;
 	}
-	printf("%s: get_phy ok!\n", __func__);
 
 	host->ops = &rockchip_sdhci_ops;
 	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD;

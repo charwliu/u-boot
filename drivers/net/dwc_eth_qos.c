@@ -45,6 +45,7 @@
 #include <reset.h>
 #include <wait_bit.h>
 #include <asm/cache.h>
+#include <asm/gpio.h>
 #include <asm/io.h>
 #ifdef CONFIG_ARCH_IMX8M
 #include <asm/arch/clock.h>
@@ -661,7 +662,7 @@ static int eqos_adjust_link(struct udevice *dev)
 	return 0;
 }
 
-int eqos_write_hwaddr(struct udevice *dev)
+static int eqos_write_hwaddr(struct udevice *dev)
 {
 	struct eth_pdata *plat = dev_get_plat(dev);
 	struct eqos_priv *eqos = dev_get_priv(dev);
@@ -736,14 +737,19 @@ static int eqos_get_phy_addr(struct eqos_priv *priv, struct udevice *dev)
 	return reg;
 }
 
-int eqos_init(struct udevice *dev)
+static int eqos_start(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
-	int ret;
+	int ret, i;
 	ulong rate;
-	u32 val;
+	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
+	ulong last_rx_desc;
+	ulong desc_pad;
 
 	debug("%s(dev=%p):\n", __func__, dev);
+
+	eqos->tx_desc_idx = 0;
+	eqos->rx_desc_idx = 0;
 
 	ret = eqos->config->ops->eqos_start_resets(dev);
 	if (ret < 0) {
@@ -828,28 +834,6 @@ int eqos_init(struct udevice *dev)
 		pr_err("eqos_adjust_link() failed: %d", ret);
 		goto err_shutdown_phy;
 	}
-	debug("%s: OK\n", __func__);
-        return 0;
-
-err_shutdown_phy:
-        phy_shutdown(eqos->phy);
-err_stop_resets:
-        eqos->config->ops->eqos_stop_resets(dev);
-err:
-        pr_err("FAILED: %d", ret);
-        return ret;
-}
-
-void eqos_enable(struct udevice *dev)
-{
-	struct eqos_priv *eqos = dev_get_priv(dev);
-	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
-	ulong last_rx_desc;
-	ulong desc_pad;
-	int i;
-
-	eqos->tx_desc_idx = 0;
-	eqos->rx_desc_idx = 0;
 
 	/* Configure MTL */
 
@@ -1081,23 +1065,20 @@ void eqos_enable(struct udevice *dev)
 	writel(last_rx_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
 
 	eqos->started = true;
-}
 
-static int eqos_start(struct udevice *dev)
-{
-	int ret;
-
-	ret = eqos_init(dev);
-	if (ret)
-		return ret;
-
-	eqos_enable(dev);
-
+	debug("%s: OK\n", __func__);
 	return 0;
+
+err_shutdown_phy:
+	phy_shutdown(eqos->phy);
+err_stop_resets:
+	eqos->config->ops->eqos_stop_resets(dev);
+err:
+	pr_err("FAILED: %d", ret);
+	return ret;
 }
 
-
-void eqos_stop(struct udevice *dev)
+static void eqos_stop(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	int i;
@@ -1150,7 +1131,7 @@ void eqos_stop(struct udevice *dev)
 	debug("%s: OK\n", __func__);
 }
 
-int eqos_send(struct udevice *dev, void *packet, int length)
+static int eqos_send(struct udevice *dev, void *packet, int length)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	struct eqos_desc *tx_desc;
@@ -1192,7 +1173,7 @@ int eqos_send(struct udevice *dev, void *packet, int length)
 	return -ETIMEDOUT;
 }
 
-int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
+static int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	struct eqos_desc *rx_desc;
@@ -1217,7 +1198,7 @@ int eqos_recv(struct udevice *dev, int flags, uchar **packetp)
 	return length;
 }
 
-int eqos_free_pkt(struct udevice *dev, uchar *packet, int length)
+static int eqos_free_pkt(struct udevice *dev, uchar *packet, int length)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	u32 idx, idx_mask = eqos->desc_per_cacheline - 1;
@@ -1534,7 +1515,7 @@ static int eqos_remove_resources_stm32(struct udevice *dev)
 	return 0;
 }
 
-int eqos_probe(struct udevice *dev)
+static int eqos_probe(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 	int ret;
@@ -1704,24 +1685,6 @@ static const struct eqos_config __maybe_unused eqos_stm32_config = {
 	.axi_bus_width = EQOS_AXI_WIDTH_64,
 	.interface = dev_read_phy_mode,
 	.ops = &eqos_stm32_ops
-};
-
-struct eqos_ops eqos_rockchip_ops = {
-        .eqos_inval_desc = eqos_inval_desc_generic,
-        .eqos_flush_desc = eqos_flush_desc_generic,
-        .eqos_inval_buffer = eqos_inval_buffer_generic,
-        .eqos_flush_buffer = eqos_flush_buffer_generic,
-        .eqos_probe_resources = eqos_probe_resources_stm32,
-        .eqos_remove_resources = eqos_remove_resources_stm32,
-        .eqos_stop_resets = eqos_null_ops,
-        .eqos_start_resets = eqos_null_ops,
-        .eqos_stop_clks = eqos_stop_clks_stm32,
-        .eqos_start_clks = eqos_start_clks_stm32,
-        .eqos_calibrate_pads = eqos_null_ops,
-        .eqos_disable_calibration = eqos_null_ops,
-        .eqos_set_tx_clk_speed = eqos_null_ops,
-        .eqos_get_enetaddr = eqos_null_ops,
-        .eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_stm32
 };
 
 static const struct udevice_id eqos_ids[] = {
