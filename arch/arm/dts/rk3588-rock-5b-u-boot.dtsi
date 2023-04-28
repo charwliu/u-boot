@@ -34,6 +34,26 @@
 	status = "okay";
 };
 
+&emmc_bus8 {
+	bootph-all;
+};
+
+&emmc_clk {
+	bootph-all;
+};
+
+&emmc_cmd {
+	bootph-all;
+};
+
+&emmc_data_strobe {
+	bootph-all;
+};
+
+&emmc_rstnout {
+	bootph-all;
+};
+
 &fspim2_pins {
 	bootph-all;
 };
@@ -64,6 +84,10 @@
 			rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+};
+
+&pcfg_pull_none {
+	bootph-all;
 };
 
 &pcfg_pull_up_drv_level_2 {
