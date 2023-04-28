@@ -6,7 +6,7 @@
  * Back ported to the 8xx platform (from the 8260 platform) by
  * Murray.Jensen@cmst.csiro.au, 27-Jan-01.
  */
-
+#define DEBUG
 #include <common.h>
 #include <cpu_func.h>
 #include <dm.h>
@@ -744,7 +744,7 @@ static int sdhci_init(struct mmc *mmc)
 		     SDHCI_INT_ENABLE);
 	/* Mask all sdhci interrupt sources */
 	sdhci_writel(host, 0x0, SDHCI_SIGNAL_ENABLE);
-
+	printf("%s: init %s ok!\n", __func__, mmc->dev->name);
 	return 0;
 }
 

@@ -4,7 +4,7 @@
  *
  * Rockchip SD Host Controller Interface
  */
-
+#define DEBUG
 #include <common.h>
 #include <clk.h>
 #include <dm.h>
@@ -152,6 +152,9 @@ struct sdhci_data {
 	 * Return: 0 if successful, -ve on error
 	 */
 	int (*set_enhanced_strobe)(struct sdhci_host *host);
+	u32 flags;
+#define RK_DLL_CMD_OUT		BIT(1)
+#define RK_RXCLK_NO_INVERTER	BIT(2)
 };
 
 static int rk3399_emmc_phy_init(struct udevice *dev)
@@ -213,6 +216,100 @@ static void rk3399_emmc_phy_power_off(struct rockchip_emmc_phy *phy)
 {
 	writel(RK_CLRSETBITS(1, 0), &phy->emmcphy_con[6]);
 	writel(RK_CLRSETBITS(1 << 1, 0), &phy->emmcphy_con[6]);
+}
+
+static int rockchip_emmc_set_clock(struct sdhci_host *host, unsigned int clock)
+{
+	unsigned int div, clk = 0, timeout;
+	unsigned int input_clk;
+	struct rockchip_sdhc *priv =
+			container_of(host, struct rockchip_sdhc, host);
+
+	/* Wait max 20 ms */
+	timeout = 200;
+	while (sdhci_readl(host, SDHCI_PRESENT_STATE) &
+			   (SDHCI_CMD_INHIBIT | SDHCI_DATA_INHIBIT)) {
+		if (timeout == 0) {
+			printf("%s: Timeout to wait cmd & data inhibit\n",
+			       __func__);
+			return -EBUSY;
+		}
+
+		timeout--;
+		udelay(100);
+	}
+	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
+
+	if (clock == 0)
+		return 0;
+
+	input_clk = clk_set_rate(&priv->emmc_clk, clock);
+	if (IS_ERR_VALUE(input_clk))
+		input_clk = host->max_clk;
+
+	if (SDHCI_GET_VERSION(host) >= SDHCI_SPEC_300) {
+		/*
+		 * Check if the Host Controller supports Programmable Clock
+		 * Mode.
+		 */
+		if (host->clk_mul) {
+			for (div = 1; div <= 1024; div++) {
+				if ((input_clk / div) <= clock)
+					break;
+			}
+
+			/*
+			 * Set Programmable Clock Mode in the Clock
+			 * Control register.
+			 */
+			clk = SDHCI_PROG_CLOCK_MODE;
+			div--;
+		} else {
+			/* Version 3.00 divisors must be a multiple of 2. */
+			if (input_clk <= clock) {
+				div = 1;
+			} else {
+				for (div = 2;
+				     div < SDHCI_MAX_DIV_SPEC_300;
+				     div += 2) {
+					if ((input_clk / div) <= clock)
+						break;
+				}
+			}
+			div >>= 1;
+		}
+	} else {
+		/* Version 2.00 divisors must be a power of 2. */
+		for (div = 1; div < SDHCI_MAX_DIV_SPEC_200; div *= 2) {
+			if ((input_clk / div) <= clock)
+				break;
+		}
+		div >>= 1;
+	}
+
+	clk |= (div & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
+	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
+		<< SDHCI_DIVIDER_HI_SHIFT;
+	clk |= SDHCI_CLOCK_INT_EN;
+	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+
+	/* Wait max 20 ms */
+	timeout = 20;
+	while (!((clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL))
+		& SDHCI_CLOCK_INT_STABLE)) {
+		if (timeout == 0) {
+			printf("%s: Internal clock never stabilised.\n",
+			       __func__);
+			return -EBUSY;
+		}
+		timeout--;
+		udelay(1000);
+	}
+	clk |= SDHCI_CLOCK_CARD_EN;
+	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+	host->clock = clock;
+
+	return 0;
 }
 
 static int rk3399_emmc_get_phy(struct udevice *dev)
@@ -306,18 +403,14 @@ static int rk3568_emmc_phy_init(struct udevice *dev)
 	return 0;
 }
 
-static int rk3568_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int clock)
+static int dwcmshc_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int clock)
 {
 	struct rockchip_sdhc *priv = container_of(host, struct rockchip_sdhc, host);
+	struct sdhci_data *data = (struct sdhci_data *)dev_get_driver_data(priv->dev);
 	int val, ret;
 	u32 extra;
 
-	if (clock > host->max_clk)
-		clock = host->max_clk;
-	if (clock)
-		clk_set_rate(&priv->emmc_clk, clock);
-
-	sdhci_set_clock(host->mmc, clock);
+	ret = rockchip_emmc_set_clock(host, clock);
 
 	if (clock >= 100 * MHz) {
 		/* reset DLL */
@@ -337,8 +430,9 @@ static int rk3568_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int clo
 		if (ret)
 			return ret;
 
-		extra = DWCMSHC_EMMC_DLL_DLYENA |
-			DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
+		extra = DWCMSHC_EMMC_DLL_DLYENA;
+		if (data->flags & RK_RXCLK_NO_INVERTER)
+			extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_RXCLK);
 
 		extra = DWCMSHC_EMMC_DLL_DLYENA |
@@ -371,12 +465,12 @@ static int rk3568_sdhci_emmc_set_clock(struct sdhci_host *host, unsigned int clo
 		sdhci_writel(host, extra, DWCMSHC_EMMC_DLL_STRBIN);
 	}
 
-	return 0;
+	return ret;
 }
 
-static int rk3568_emmc_get_phy(struct udevice *dev)
+static int dwcmshc_emmc_get_phy(struct udevice *dev)
 {
-	return 0;
+        return 0;
 }
 
 static int rk3568_sdhci_set_enhanced_strobe(struct sdhci_host *host)
@@ -398,7 +492,7 @@ static int rk3568_sdhci_set_enhanced_strobe(struct sdhci_host *host)
 	return 0;
 }
 
-static int rk3568_sdhci_set_ios_post(struct sdhci_host *host)
+static int dwcmshc_sdhci_set_ios_post(struct sdhci_host *host)
 {
 	struct mmc *mmc = host->mmc;
 	uint clock = mmc->tran_speed;
@@ -407,7 +501,7 @@ static int rk3568_sdhci_set_ios_post(struct sdhci_host *host)
 	if (!clock)
 		clock = mmc->clock;
 
-	rk3568_sdhci_emmc_set_clock(host, clock);
+	dwcmshc_sdhci_emmc_set_clock(host, clock);
 
 	if (mmc->selected_mode == MMC_HS_400 || mmc->selected_mode == MMC_HS_400_ES) {
 		reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
@@ -537,6 +631,7 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 	struct clk clk;
 	int ret;
 
+	printf("%s: ** begin probe %s ... \n", __func__, dev->name);
 	host->max_clk = cfg->f_max;
 	ret = clk_get_by_index(dev, 0, &clk);
 	if (!ret) {
@@ -555,6 +650,7 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 		if (ret)
 			return ret;
 	}
+	printf("%s: get_phy ok!\n", __func__);
 
 	if (data->emmc_phy_init) {
 		ret = data->emmc_phy_init(dev);
@@ -562,6 +658,7 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 			return ret;
 	}
 
+	printf("%s: emmc_phy_init ok!\n", __func__);
 	host->ops = &rockchip_sdhci_ops;
 	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD;
 
@@ -574,6 +671,7 @@ static int rockchip_sdhci_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
+	printf("%s: sdhci_setup_cfg ok!\n", __func__);
 	return sdhci_probe(dev);
 }
 
@@ -610,10 +708,19 @@ static const struct sdhci_data rk3399_data = {
 };
 
 static const struct sdhci_data rk3568_data = {
-	.get_phy = rk3568_emmc_get_phy,
+	.get_phy = dwcmshc_emmc_get_phy,
 	.emmc_phy_init = rk3568_emmc_phy_init,
-	.set_ios_post = rk3568_sdhci_set_ios_post,
+	.set_ios_post = dwcmshc_sdhci_set_ios_post,
 	.set_enhanced_strobe = rk3568_sdhci_set_enhanced_strobe,
+	.flags = RK_RXCLK_NO_INVERTER,
+};
+
+static const struct sdhci_data rk3588_data = {
+	.get_phy = dwcmshc_emmc_get_phy,
+	.emmc_phy_init = rk3568_emmc_phy_init,
+	.set_ios_post = dwcmshc_sdhci_set_ios_post,
+	.set_enhanced_strobe = rk3568_sdhci_set_enhanced_strobe,
+	.flags = RK_DLL_CMD_OUT | RK_RXCLK_NO_INVERTER,
 };
 
 static const struct udevice_id sdhci_ids[] = {
@@ -624,6 +731,10 @@ static const struct udevice_id sdhci_ids[] = {
 	{
 		.compatible = "rockchip,rk3568-dwcmshc",
 		.data = (ulong)&rk3568_data,
+	},
+	{
+		.compatible = "rockchip,rk3588-dwcmshc",
+		.data = (ulong)&rk3588_data,
 	},
 	{ }
 };

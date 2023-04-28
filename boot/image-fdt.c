@@ -434,7 +434,7 @@ static int select_fdt(struct bootm_headers *images, const char *select, u8 arch,
 			 * FDT blob
 			 */
 			debug("*  fdt: raw FDT blob\n");
-			printf("## Flattened Device Tree blob at %08lx\n",
+			printf("## Flattened Device Tree blob at %#08lx\n",
 			       (long)fdt_addr);
 		}
 		break;

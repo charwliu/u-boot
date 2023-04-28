@@ -190,6 +190,12 @@
 		};
 	};
 
+	rng: rng@fe378000 {
+		compatible = "rockchip,trngv1";
+		reg = <0x0 0xfe378000 0x0 0x200>;
+		status = "disabled";
+	};
+
 	combphy0_ps: phy@fee00000 {
 		compatible = "rockchip,rk3588-naneng-combphy";
 		reg = <0x0 0xfee00000 0x0 0x100>;
@@ -223,16 +229,20 @@
 };
 
 &scmi {
-	bootph-all;
+	bootph-pre-ram;
 };
 
 &scmi_clk {
-	bootph-all;
+	bootph-pre-ram;
 };
 
 &sdmmc {
-	bootph-all;
+	bootph-pre-ram;
 	u-boot,spl-fifo-mode;
+};
+
+&sdhci {
+	bootph-pre-ram;
 };
 
 &uart2 {

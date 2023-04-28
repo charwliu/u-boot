@@ -7,6 +7,7 @@
  * Based vaguely on the Linux code
  */
 
+#define DEBUG
 #include <config.h>
 #include <common.h>
 #include <blk.h>
@@ -3057,9 +3058,12 @@ static int mmc_probe(struct bd_info *bis)
 			break;
 	}
 	uclass_foreach_dev(dev, uc) {
+		printf("%s: begin probe %s ... \n", __func__, dev->name);
 		ret = device_probe(dev);
 		if (ret)
-			pr_err("%s - probe failed: %d\n", dev->name, ret);
+			pr_err("%s: %s - probe failed: %d\n", __func__, dev->name, ret);
+		else 
+			printf("%s: %s - probe ok!\n", __func__, dev->name);
 	}
 
 	return 0;
@@ -3078,6 +3082,7 @@ int mmc_initialize(struct bd_info *bis)
 {
 	static int initialized = 0;
 	int ret;
+	printf("%s: begin...\n", __func__);
 	if (initialized)	/* Avoid initializing mmc multiple times */
 		return 0;
 	initialized = 1;
@@ -3089,7 +3094,12 @@ int mmc_initialize(struct bd_info *bis)
 #endif
 	ret = mmc_probe(bis);
 	if (ret)
+	{
+		printf("%s: probe failed: %d\n", __func__, ret);
 		return ret;
+	} else {
+		printf("%s: probe ok: %d\n", __func__, ret);
+	}
 
 #ifndef CONFIG_SPL_BUILD
 	print_mmc_devices(',');

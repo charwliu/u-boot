@@ -11,11 +11,11 @@
 / {
 	aliases {
 		mmc0 = &sdmmc;
+		mmc1 = &sdhci;
 	};
 
 	chosen {
-		u-boot,spl-boot-order = "same-as-spl", &sdmmc;
-		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &flash0;
+		u-boot,spl-boot-order = &sdmmc, &sdhci, &flash0;
 	};
 
 	vcc5v0_host: vcc5v0-host-regulator {
@@ -50,6 +50,14 @@
 	bus-width = <4>;
 	bootph-all;
 	u-boot,spl-fifo-mode;
+	status = "okay";
+};
+
+&sdhci {
+	bus-width = <8>;
+	bootph-all;
+	mmc-hs400-1_8v;
+	non-removable;
 	status = "okay";
 };
 
