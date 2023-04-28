@@ -19,6 +19,15 @@
 		stdout-path = "serial2:1500000n8";
 	};
 
+	vcc_3v3_s3: vcc_3v3_s3-sys-regulator {
+                compatible = "regulator-fixed";
+                regulator-name = "vcc_3v3_s3";
+                regulator-always-on;
+                regulator-boot-on;
+                regulator-min-microvolt = <3300000>;
+                regulator-max-microvolt = <3300000>;
+        };
+
 	vcc5v0_sys: vcc5v0-sys-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc5v0_sys";

@@ -331,3 +331,8 @@
 &ioc {
 	bootph-pre-ram;
 };
+
+&saradc {
+	bootph-all;
+	status = "okay";
+};
