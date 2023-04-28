@@ -171,6 +171,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
 
 dtb-$(CONFIG_ROCKCHIP_RK3588) += \
 	rk3588-edgeble-neu6a-io.dtb \
+	rk3588-evb1-v10.dtb \
 	rk3588-rock-5b.dtb \
 	rk3588-nanopi6.dtb
 
@@ -192,6 +193,8 @@ dtb-$(CONFIG_ARCH_MESON) += \
 	meson-gxbb-nanopi-k2.dtb \
 	meson-gxbb-p200.dtb \
 	meson-gxbb-p201.dtb \
+	meson-gxbb-wetek-hub.dtb \
+	meson-gxbb-wetek-play2.dtb \
 	meson-gxl-s805x-libretech-ac.dtb \
 	meson-gxl-s905d-libretech-pc.dtb \
 	meson-gxl-s905w-jethome-jethub-j80.dtb \
@@ -199,20 +202,25 @@ dtb-$(CONFIG_ARCH_MESON) += \
 	meson-gxl-s905x-libretech-cc.dtb \
 	meson-gxl-s905x-libretech-cc-v2.dtb \
 	meson-gxl-s905x-p212.dtb \
+	meson-gxm-gt1-ultimate.dtb \
 	meson-gxm-khadas-vim2.dtb \
 	meson-gxm-s912-libretech-pc.dtb \
 	meson-gxm-wetek-core2.dtb \
 	meson-g12a-radxa-zero.dtb \
 	meson-g12a-sei510.dtb \
 	meson-g12a-u200.dtb \
+	meson-g12b-a311d-bananapi-m2s.dtb \
 	meson-g12b-a311d-khadas-vim3.dtb \
+	meson-g12b-bananapi-cm4-cm4io.dtb \
+	meson-g12b-gsking-x.dtb \
 	meson-g12b-gtking.dtb \
 	meson-g12b-gtking-pro.dtb \
-	meson-g12b-gsking-x.dtb \
 	meson-g12b-odroid-go-ultra.dtb \
 	meson-g12b-odroid-n2.dtb \
 	meson-g12b-odroid-n2l.dtb \
 	meson-g12b-odroid-n2-plus.dtb \
+	meson-g12b-radxa-zero2.dtb \
+	meson-sm1-bananapi-m2-pro.dtb \
 	meson-sm1-bananapi-m5.dtb \
 	meson-sm1-khadas-vim3l.dtb \
 	meson-sm1-odroid-c4.dtb \
@@ -996,6 +1004,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-beacon-kit.dtb \
 	imx8mq-mnt-reform2.dtb \
 	imx8mq-phanbell.dtb \
+	imx8mp-beacon-kit.dtb \
+	imx8mp-data-modul-edm-sbc.dtb \
 	imx8mp-dhcom-pdk2.dtb \
 	imx8mp-dhcom-pdk3.dtb \
 	imx8mp-evk.dtb \
@@ -1043,10 +1053,14 @@ dtb-$(CONFIG_RCAR_GEN3) += \
 	r8a77970-eagle-u-boot.dtb \
 	r8a77980-condor-u-boot.dtb \
 	r8a77990-ebisu-u-boot.dtb \
-	r8a77995-draak-u-boot.dtb \
-	r8a779a0-falcon-u-boot.dtb
+	r8a77995-draak-u-boot.dtb
 
-ifdef CONFIG_RCAR_GEN3
+dtb-$(CONFIG_RCAR_GEN4) += \
+	r8a779a0-falcon-u-boot.dtb \
+	r8a779f0-spider-u-boot.dtb \
+	r8a779g0-white-hawk-u-boot.dtb
+
+ifdef CONFIG_RCAR_64
 DTC_FLAGS += -R 4 -p 0x1000
 endif
 

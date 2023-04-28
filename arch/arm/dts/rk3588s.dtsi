@@ -1115,22 +1115,21 @@
 	};
 
 	sdhci: mmc@fe2e0000 {
-                compatible = "rockchip,rk3588-dwcmshc", "rockchip,dwcmshc-sdhci";
-                reg = <0x0 0xfe2e0000 0x0 0x10000>;
-                interrupts = <GIC_SPI 205 IRQ_TYPE_LEVEL_HIGH 0>;
-                assigned-clocks = <&cru BCLK_EMMC>, <&cru TMCLK_EMMC>, <&cru CCLK_EMMC>;
-                assigned-clock-rates = <200000000>, <24000000>, <200000000>;
-                clocks = <&cru CCLK_EMMC>, <&cru HCLK_EMMC>,
-                         <&cru ACLK_EMMC>, <&cru BCLK_EMMC>,
-                         <&cru TMCLK_EMMC>;
-                clock-names = "core", "bus", "axi", "block", "timer";
-                max-frequency = <200000000>;
-                resets = <&cru SRST_C_EMMC>, <&cru SRST_H_EMMC>,
-                         <&cru SRST_A_EMMC>, <&cru SRST_B_EMMC>,
-                         <&cru SRST_T_EMMC>;
-                reset-names = "core", "bus", "axi", "block", "timer";
-                status = "disabled";
-        };        
+		compatible = "rockchip,rk3588-dwcmshc";
+		reg = <0x0 0xfe2e0000 0x0 0x10000>;
+		interrupts = <GIC_SPI 205 IRQ_TYPE_LEVEL_HIGH 0>;
+		assigned-clocks = <&cru BCLK_EMMC>, <&cru TMCLK_EMMC>, <&cru CCLK_EMMC>;
+		assigned-clock-rates = <200000000>, <24000000>, <200000000>;
+		clocks = <&cru CCLK_EMMC>, <&cru HCLK_EMMC>,
+			 <&cru ACLK_EMMC>, <&cru BCLK_EMMC>,
+			 <&cru TMCLK_EMMC>;
+		clock-names = "core", "bus", "axi", "block", "timer";
+		max-frequency = <200000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_det &sdmmc_bus4>;
+		power-domains = <&power RK3588_PD_SDMMC>;
+		status = "disabled";
+	};
 
 	gic: interrupt-controller@fe600000 {
 		compatible = "arm,gic-v3";
