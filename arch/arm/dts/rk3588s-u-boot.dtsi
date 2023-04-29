@@ -246,8 +246,37 @@
 		#size-cells = <1>;
 		status = "okay";
 
+		cpu_code: cpu-code@2 {
+		    reg = <0x02 0x2>;
+		};
+		specification_serial_number: specification-serial-number@6 {
+		    reg = <0x06 0x1>;
+		    bits = <0 5>;
+		};
 		cpu_id: id@7 {
 			reg = <0x07 0x10>;
+		};
+		otp_cpu_version: cpu-version@1c {
+			reg = <0x1c 0x1>;
+			bits = <3 3>;
+		};
+		cpub0_leakage: cpub0-leakage@17 {
+			reg = <0x17 0x1>;
+		};
+		cpub1_leakage: cpub1-leakage@18 {
+			reg = <0x18 0x1>;
+		};
+		cpul_leakage: cpul-leakage@19 {
+			reg = <0x19 0x1>;
+		};
+		log_leakage: log-leakage@1a {
+			reg = <0x1a 0x1>;
+		};
+		gpu_leakage: gpu-leakage@1b {
+			reg = <0x1b 0x1>;
+		};
+		npu_leakage: npu-leakage@28 {
+			reg = <0x28 0x1>;
 		};
 	};
 

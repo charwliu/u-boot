@@ -3,7 +3,7 @@
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
-#include "rk3588.dtsi"
+#include "rk3588s.dtsi"
 
 / {
 	model = "FriendlyElec NanoPi R6S";
@@ -12,6 +12,7 @@
 	aliases {
 		mmc0 = &sdmmc;
 		mmc1 = &sdhci;
+		ethernet1 = &gmac1;
 		serial2 = &uart2;
 	};
 
