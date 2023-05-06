@@ -360,6 +360,7 @@
 
 &sdhci {
 	bootph-pre-ram;
+	u-boot,spl-fifo-mode;
 };
 
 &uart2 {
