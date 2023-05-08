@@ -10,8 +10,10 @@
 
 / {
 	aliases {
-		mmc0 = &sdhci;
-		mmc1 = &sdmmc;
+		mmc0 = &sdmmc;
+		mmc1 = &sdhci;
+		ethernet1 = &gmac1;
+		serial2 = &uart2;
 	};
 
 	chosen {
