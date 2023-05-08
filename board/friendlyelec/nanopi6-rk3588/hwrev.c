@@ -59,7 +59,7 @@ static uint32_t get_adc_index(int chn)
 	if (cached_board_id != -1)
 		return cached_board_id;
 
-	adc_channel_single_shot("saradc", chn, &adc_reading);
+	adc_channel_single_shot("saradc@fec10000", chn, &adc_reading);
 
 	/* rockchip-saradc-v2 */
 	adc_reading >>= 2;
@@ -102,7 +102,11 @@ const char *get_board_name(void)
 
 	switch (pcb_rev) {
 		case 0x01:
+		case 0x02:
 			return "NanoPi R6S";
+		case 0x03:
+		case 0x04:
+			return "NanoPi R6C";
 		default:
 			return "FriendlyELEC RK3588 board";
 	}

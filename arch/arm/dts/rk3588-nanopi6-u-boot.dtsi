@@ -273,3 +273,28 @@
 		spi-tx-bus-width = <1>;
 	};
 };
+
+&dmac0 {
+	bootph-all;
+};
+
+&i2c6 {
+	clock-frequency = <200000>;
+	status = "okay";
+	bootph-all;
+
+	eeprom@53 {
+		bootph-all;
+		compatible = "microchip,24c02", "atmel,24c02";
+		reg = <0x53>;
+		#address-cells = <2>;
+		#size-cells = <0>;
+		pagesize = <16>;
+		size = <256>;
+
+		eui_48: eui-48@fa {
+			bootph-all;
+			reg = <0xfa 0x06>;
+		};
+	};
+};

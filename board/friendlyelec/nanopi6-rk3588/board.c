@@ -54,8 +54,8 @@ static int board_check_supply(void)
 	u32 adc_reading = 0;
 	int mv = 5000;
 
-	adc_channel_single_shot("saradc", 2, &adc_reading);
-	debug("ADC reading %d\n", adc_reading);
+	adc_channel_single_shot("saradc@fec10000", 2, &adc_reading);
+	debug("%s: ADC reading %d\n", __func__, adc_reading);
 
 	mv = adc_reading * 2475 / 512;
 
@@ -73,6 +73,8 @@ static int mac_read_from_generic_eeprom(u8 *addr)
 	ret = i2c_get_chip_for_busnum(6, 0x53, 1, &i2c_dev);
 	if (!ret)
 		ret = dm_i2c_read(i2c_dev, 0xfa, addr, 6);
+	else
+		debug("%s: no EEPROMs found %d\n", __func__, ret);
 
 	return ret;
 }
@@ -105,7 +107,7 @@ int misc_init_r(void)
 }
 #endif
 
-#ifdef CONFIG_DISPLAY_BOARDINFO
+#if defined(CONFIG_DISPLAY_BOARDINFO) || defined(CONFIG_DISPLAY_BOARDINFO_LATE)
 int show_board_info(void)
 {
 	printf("Board: %s\n", get_board_name());
