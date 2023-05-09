@@ -112,7 +112,7 @@ void rockchip_stimer_init(void)
 	if (reg & 0x1)
 		return;
 
-	asm volatile("msr CNTFRQ_EL0, %0" : : "r" (CONFIG_COUNTER_FREQUENCY));
+	asm volatile("msr CNTFRQ_EL0, %0" : : "r" ((__u64)(CONFIG_COUNTER_FREQUENCY)));
 	writel(0xffffffff, CONFIG_ROCKCHIP_STIMER_BASE + 0x14);
 	writel(0xffffffff, CONFIG_ROCKCHIP_STIMER_BASE + 0x18);
 	writel(0x1, CONFIG_ROCKCHIP_STIMER_BASE + 0x4);
