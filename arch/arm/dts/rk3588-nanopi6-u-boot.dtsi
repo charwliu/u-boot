@@ -19,28 +19,6 @@
 	chosen {
 		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &sdhci, &flash0;
 	};
-
-       vcc_3v3_pcie20: vcc3v3-pcie20 {
-                compatible = "regulator-fixed";
-                regulator-name = "vcc_3v3_pcie20";
-                regulator-always-on;
-                regulator-boot-on;
-                regulator-min-microvolt = <3300000>;
-                regulator-max-microvolt = <3300000>;
-                vin-supply = <&vcc_3v3_s3>;
-        };
-
-	vcc5v0_host: vcc5v0-host-regulator {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc5v0_host";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		enable-active-high;
-		gpio = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&vcc5v0_host_en>;
-		vin-supply = <&vcc5v0_sys>;
-	};
 };
 
 &combphy0_ps {
@@ -120,27 +98,6 @@
     };
 };
 
-&pinctrl {
-	bootph-all;
-
-	pcie {
-		pcie_reset_h: pcie-reset-h {
-			rockchip,pins = <3 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-
-		pcie2x1l2_pins: pcie2x1l2-pins {
-			rockchip,pins = <3 RK_PC7 4 &pcfg_pull_none>,
-					<3 RK_PD0 4 &pcfg_pull_none>;
-		};
-	};
-
-	usb {
-		vcc5v0_host_en: vcc5v0-host-en {
-			rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-	};
-};
-
 &pcfg_pull_up_drv_level_2 {
 	bootph-all;
 };
@@ -202,6 +159,27 @@
 	};
 };
 
+&u2phy0 {
+        status = "okay";
+};
+
+&u2phy0_otg {
+        status = "okay";
+};
+
+&usb2phy2_grf {
+        status = "okay";
+};
+
+&u2phy2 {
+        status = "okay";
+};
+
+&u2phy2_host {
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
+
 &usb_host0_ehci {
 	companion = <&usb_host0_ohci>;
 	phys = <&u2phy2_host>;
@@ -215,65 +193,30 @@
 	status = "okay";
 };
 
-&usb2phy2_grf {
-	status = "okay";
+&usbdp_phy0 {
+        status = "okay";
 };
 
-&u2phy2 {
-	resets = <&cru SRST_OTGPHY_U2_0>, <&cru SRST_P_USB2PHY_U2_0_GRF0>;
-	reset-names = "phy", "apb";
-	clock-output-names = "usb480m_phy2";
-	status = "okay";
+&usbdp_phy0_u3 {
+        status = "okay";
 };
 
-&u2phy2_host {
-	phy-supply = <&vcc5v0_host>;
-	status = "okay";
+&usbdrd3_0 {
+        status = "okay";
 };
 
-&usb_host1_ehci {
-	companion = <&usb_host1_ohci>;
-	phys = <&u2phy3_host>;
-	phy-names = "usb2-phy";
-	status = "okay";
+&usbdrd_dwc3_0 {
+        dr_mode = "otg";
+        extcon = <&u2phy0>;
+        status = "okay";
 };
 
-&usb_host1_ohci {
-	phys = <&u2phy3_host>;
-	phy-names = "usb2-phy";
-	status = "okay";
+&usbhost3_0 {
+        status = "disabled";
 };
 
-&usb2phy3_grf {
-	status = "okay";
-};
-
-&u2phy3 {
-	resets = <&cru SRST_OTGPHY_U2_1>, <&cru SRST_P_USB2PHY_U2_1_GRF0>;
-	reset-names = "phy", "apb";
-	clock-output-names = "usb480m_phy3";
-	status = "okay";
-};
-
-&u2phy3_host {
-	phy-supply = <&vcc5v0_host>;
-	status = "okay";
-};
-
-&sfc {
-	bootph-all;
-	pinctrl-0 = <&fspim2_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-
-	flash@0 {
-		bootph-all;
-		compatible = "jedec,spi-nor";
-		reg = <0>;
-		spi-max-frequency = <10000000>;
-		spi-rx-bus-width = <4>;
-		spi-tx-bus-width = <1>;
-	};
+&usbhost_dwc3_0 {
+        status = "disabled";
 };
 
 &dmac0 {
@@ -293,6 +236,7 @@
 		#size-cells = <0>;
 		pagesize = <16>;
 		size = <256>;
+		vcc-supply=<&vcc_3v3_s3>;
 
 		eui_48: eui-48@fa {
 			bootph-all;
