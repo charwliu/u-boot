@@ -358,21 +358,14 @@ static int rockchip_pcie_parse_dt(struct udevice *dev)
 	struct rk_pcie *priv = dev_get_priv(dev);
 	int ret;
 
-	priv->dw.dbi_base = (void *)dev_read_addr_name(dev, "dbi");
-	if ((fdt_addr_t)priv->dw.dbi_base == FDT_ADDR_T_NONE)
+	priv->dw.dbi_base = dev_read_addr_index_ptr(dev, 0);
+	if (!priv->dw.dbi_base)
 		return -EINVAL;
 
 	dev_dbg(dev, "DBI address is 0x%p\n", priv->dw.dbi_base);
 
-	priv->dw.cfg_base = (void *)dev_read_addr_size_name(dev, "config",
-							    &priv->dw.cfg_size);
-	if ((fdt_addr_t)priv->dw.cfg_base == FDT_ADDR_T_NONE)
-		return -EINVAL;
-
-	dev_dbg(dev, "CFG address is 0x%p\n", priv->dw.cfg_base);
-
-	priv->apb_base = (void *)dev_read_addr_name(dev, "apb");
-	if ((fdt_addr_t)priv->apb_base == FDT_ADDR_T_NONE)
+	priv->apb_base = dev_read_addr_index_ptr(dev, 1);
+	if (!priv->apb_base)
 		return -EINVAL;
 
 	dev_dbg(dev, "APB address is 0x%p\n", priv->apb_base);
@@ -414,13 +407,14 @@ static int rockchip_pcie_parse_dt(struct udevice *dev)
 
 	return 0;
 
-rockchip_pcie_parse_dt_err_reset_get_bulk:
 rockchip_pcie_parse_dt_err_phy_get_by_index:
 	/* regulators don't need release */
 rockchip_pcie_parse_dt_err_supply_regulator:
 	clk_release_bulk(&priv->clks);
 rockchip_pcie_parse_dt_err_clk_get_bulk:
 	reset_release_bulk(&priv->rsts);
+rockchip_pcie_parse_dt_err_reset_get_bulk:
+	dm_gpio_free(dev, &priv->rst_gpio);
 	return ret;
 }
 
@@ -466,11 +460,19 @@ static int rockchip_pcie_probe(struct udevice *dev)
 	if (!ret)
 		return ret;
 
+	ret = pcie_dw_prog_outbound_atu_unroll(&priv->dw,
+					       PCIE_ATU_REGION_INDEX0,
+					       PCIE_ATU_TYPE_MEM,
+					       priv->dw.mem.phys_start,
+					       priv->dw.mem.bus_start,
+					       priv->dw.mem.size);
+	if (!ret)
+		return ret;
+
 rockchip_pcie_probe_err_init_port:
 	clk_release_bulk(&priv->clks);
 	reset_release_bulk(&priv->rsts);
-	if (dm_gpio_is_valid(&priv->rst_gpio))
-		dm_gpio_free(dev, &priv->rst_gpio);
+	dm_gpio_free(dev, &priv->rst_gpio);
 
 	return ret;
 }
