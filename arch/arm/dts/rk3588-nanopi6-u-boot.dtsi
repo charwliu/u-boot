@@ -184,6 +184,7 @@
 	companion = <&usb_host0_ohci>;
 	phys = <&u2phy2_host>;
 	phy-names = "usb2-phy";
+	vbus-supply = <&vcc5v0_host>;
 	status = "okay";
 };
 
