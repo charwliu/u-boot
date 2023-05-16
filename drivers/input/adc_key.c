@@ -8,9 +8,9 @@
 #include <dm.h>
 #include <key.h>
 
-static int adc_key_ofdata_to_platdata(struct udevice *dev)
+static int adc_key_of_to_plat(struct udevice *dev)
 {
-	struct dm_key_uclass_platdata *uc_key;
+	struct dm_key_uclass_plat *uc_key;
 	u32 chn[2], mV;
 	int vref, ret;
 #ifdef CONFIG_SARADC_ROCKCHIP_V2
@@ -19,7 +19,7 @@ static int adc_key_ofdata_to_platdata(struct udevice *dev)
 	int range = 1024;	/* 10-bit adc */
 #endif
 
-	uc_key = dev_get_uclass_platdata(dev);
+	uc_key = dev_get_uclass_plat(dev);
 	if (!uc_key)
 		return -ENXIO;
 
@@ -62,8 +62,8 @@ static int adc_key_ofdata_to_platdata(struct udevice *dev)
 
 U_BOOT_DRIVER(adc_key) = {
 	.name   = "adc_key",
-	.id     = UCLASS_KEY,
-	.ofdata_to_platdata = adc_key_ofdata_to_platdata,
+	.id	= UCLASS_KEY,
+	.of_to_plat = adc_key_of_to_plat,
 };
 
 /* Key Bus */

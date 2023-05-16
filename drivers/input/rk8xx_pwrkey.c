@@ -14,9 +14,9 @@
 static void rk8xx_pwron_rise_handler(int irq, void *data)
 {
 	struct udevice *dev = data;
-	struct dm_key_uclass_platdata *key;
+	struct dm_key_uclass_plat *key;
 
-	key = dev_get_uclass_platdata(dev);
+	key = dev_get_uclass_plat(dev);
 	key->rise_ms = key_timer(0);
 
 	debug("%s: %llu ms\n", __func__, key->rise_ms);
@@ -25,9 +25,9 @@ static void rk8xx_pwron_rise_handler(int irq, void *data)
 static void rk8xx_pwron_fall_handler(int irq, void *data)
 {
 	struct udevice *dev = data;
-	struct dm_key_uclass_platdata *key;
+	struct dm_key_uclass_plat *key;
 
-	key = dev_get_uclass_platdata(dev);
+	key = dev_get_uclass_plat(dev);
 	key->fall_ms = key_timer(0);
 
 	debug("%s: %llu ms\n", __func__, key->fall_ms);
@@ -36,7 +36,7 @@ static void rk8xx_pwron_fall_handler(int irq, void *data)
 static int rk8xx_pwrkey_probe(struct udevice *dev)
 {
 	struct rk8xx_priv *rk8xx = dev_get_priv(dev->parent);
-	struct dm_key_uclass_platdata *key = dev_get_uclass_platdata(dev);
+	struct dm_key_uclass_plat *key = dev_get_uclass_plat(dev);
 	int fall_irq, rise_irq;
 
 	if (!rk8xx->irq_chip) {

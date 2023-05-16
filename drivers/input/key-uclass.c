@@ -11,6 +11,8 @@
 #include <key.h>
 #include <dm/lists.h>
 #include <dm/uclass-internal.h>
+#include <asm/barriers.h>
+#include <linux/delay.h>
 
 #define KEY_WARN(fmt, args...)	printf("Key Warn: "fmt, ##args)
 #define KEY_ERR(fmt, args...)	printf("Key Error: "fmt, ##args)
@@ -37,13 +39,13 @@ uint64_t key_timer(uint64_t base)
 	return (cntpct > base) ? (cntpct - base) : 0;
 }
 
-static int key_adc_event(struct dm_key_uclass_platdata *uc_key, int adcval)
+static int key_adc_event(struct dm_key_uclass_plat *uc_key, int adcval)
 {
 	return (adcval <= uc_key->max && adcval >= uc_key->min) ?
 		KEY_PRESS_DOWN : KEY_PRESS_NONE;
 }
 
-static int key_gpio_event(struct dm_key_uclass_platdata *uc_key)
+static int key_gpio_event(struct dm_key_uclass_plat *uc_key)
 {
 	if (!dm_gpio_is_valid(&uc_key->gpio)) {
 		KEY_ERR("'%s' Invalid gpio\n", uc_key->name);
@@ -54,7 +56,7 @@ static int key_gpio_event(struct dm_key_uclass_platdata *uc_key)
 	       KEY_PRESS_DOWN : KEY_PRESS_NONE;
 }
 
-static int key_gpio_interrupt_event(struct dm_key_uclass_platdata *uc_key)
+static int key_gpio_interrupt_event(struct dm_key_uclass_plat *uc_key)
 {
 	int event;
 
@@ -106,7 +108,7 @@ int key_is_pressed(int event)
 	return (event == KEY_PRESS_DOWN || event == KEY_PRESS_LONG_DOWN);
 }
 
-static int key_core_read(struct dm_key_uclass_platdata *uc_key)
+static int key_core_read(struct dm_key_uclass_plat *uc_key)
 {
 	unsigned int adcval;
 
@@ -127,7 +129,7 @@ static int key_core_read(struct dm_key_uclass_platdata *uc_key)
 
 int key_read(int code)
 {
-	struct dm_key_uclass_platdata *uc_key;
+	struct dm_key_uclass_plat *uc_key;
 	struct udevice *dev;
 	struct uclass *uc;
 	bool allow_pre_reloc = false;
@@ -141,7 +143,7 @@ try_again:
 	for (uclass_first_device(UCLASS_KEY, &dev);
 	     dev;
 	     uclass_next_device(&dev)) {
-		uc_key = dev_get_uclass_platdata(dev);
+		uc_key = dev_get_uclass_plat(dev);
 
 		if (!allow_pre_reloc && uc_key->pre_reloc)
 			continue;
@@ -165,13 +167,13 @@ try_again:
 
 int key_exist(int code)
 {
-	struct dm_key_uclass_platdata *uc_key;
+	struct dm_key_uclass_plat *uc_key;
 	struct udevice *dev;
 
 	for (uclass_find_first_device(UCLASS_KEY, &dev);
 	     dev;
 	     uclass_find_next_device(&dev)) {
-		uc_key = dev_get_uclass_platdata(dev);
+		uc_key = dev_get_uclass_plat(dev);
 
 		if (uc_key->code == code)
 			return 1;
@@ -183,7 +185,7 @@ int key_exist(int code)
 #if CONFIG_IS_ENABLED(IRQ)
 #if defined(CONFIG_PWRKEY_DNL_TRIGGER_NUM) && \
 		(CONFIG_PWRKEY_DNL_TRIGGER_NUM > 0)
-static void power_key_download(struct dm_key_uclass_platdata *uc_key)
+static void power_key_download(struct dm_key_uclass_plat *uc_key)
 {
 	int trig_cnt = CONFIG_PWRKEY_DNL_TRIGGER_NUM;
 	static u64 old_rise_ms;
@@ -208,7 +210,7 @@ int pwrkey_download_init(void)
 static void gpio_irq_handler(int irq, void *data)
 {
 	struct udevice *dev = data;
-	struct dm_key_uclass_platdata *uc_key = dev_get_uclass_platdata(dev);
+	struct dm_key_uclass_plat *uc_key = dev_get_uclass_plat(dev);
 
 	if (uc_key->irq != irq)
 		return;
@@ -271,14 +273,14 @@ int key_bind_children(struct udevice *dev, const char *drv_name)
 
 static int key_post_probe(struct udevice *dev)
 {
-	struct dm_key_uclass_platdata *uc_key;
+	struct dm_key_uclass_plat *uc_key;
 	int ret;
 #ifdef CONFIG_SARADC_ROCKCHIP_V2
 	int margin = 120;
 #else
 	int margin = 30;
 #endif
-	uc_key = dev_get_uclass_platdata(dev);
+	uc_key = dev_get_uclass_plat(dev);
 	if (!uc_key)
 		return -ENXIO;
 
@@ -357,6 +359,6 @@ UCLASS_DRIVER(key) = {
 	.id		= UCLASS_KEY,
 	.name		= "key",
 	.post_probe	= key_post_probe,
-	.per_device_platdata_auto_alloc_size =
-			sizeof(struct dm_key_uclass_platdata),
+	.per_device_plat_auto =
+			sizeof(struct dm_key_uclass_plat),
 };

@@ -25,7 +25,7 @@ enum key_event {
 	KEY_NOT_EXIST,
 };
 
-struct dm_key_uclass_platdata {
+struct dm_key_uclass_plat {
 	const char *name;
 	bool pre_reloc;
 	u32 code;

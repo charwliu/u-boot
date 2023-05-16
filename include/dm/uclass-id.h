@@ -147,6 +147,8 @@ enum uclass_id {
 	UCLASS_W1_EEPROM,	/* one-wire EEPROMs */
 	UCLASS_WDT,		/* Watchdog Timer driver */
 
+	UCLASS_KEY,             /* Key */
+	UCLASS_RC,              /* Remote Controller */
 	UCLASS_COUNT,
 	UCLASS_INVALID = -1,
 };
