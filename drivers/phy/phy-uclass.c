@@ -4,6 +4,7 @@
  * Written by Jean-Jacques Hiblot  <jjhiblot@ti.com>
  */
 
+#define DEBUG
 #define LOG_CATEGORY UCLASS_PHY
 
 #include <common.h>
