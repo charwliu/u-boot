@@ -22,6 +22,7 @@ obj-$(CONFIG_$(SPL_)PMIC_AXP) += axp.o
 obj-$(CONFIG_PMIC_MAX8997) += max8997.o
 obj-$(CONFIG_PMIC_QCOM) += pmic_qcom.o
 obj-$(CONFIG_$(SPL_TPL_)PMIC_RK8XX) += rk8xx.o
+obj-$(CONFIG_PMIC_SPI_RK8XX) += rk8xx_spi.o
 obj-$(CONFIG_$(SPL_)PMIC_RN5T567) += rn5t567.o
 obj-$(CONFIG_PMIC_TPS65090) += tps65090.o
 obj-$(CONFIG_PMIC_S5M8767) += s5m8767.o
