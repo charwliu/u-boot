@@ -11,12 +11,24 @@
 / {
 	aliases {
 		mmc1 = &sdmmc;
+		spi0 = &sfc;
 	};
 
 	chosen {
 		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &sdhci, &flash0;
 	};
 
+	vcc5v0_host: vcc5v0-host-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_host";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vcc5v0_host_en>;
+		vin-supply = <&vcc5v0_sys>;
+	};
 };
 
 &combphy0_ps {
@@ -52,6 +64,27 @@
 	pinctrl-0 = <&pcie2x1l2_pins &pcie_reset_h>;
 	reset-gpios = <&gpio3 RK_PB0 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+};
+
+&pinctrl {
+	bootph-all;
+
+	pcie {
+		pcie_reset_h: pcie-reset-h {
+			rockchip,pins = <3 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		pcie2x1l2_pins: pcie2x1l2-pins {
+			rockchip,pins = <3 RK_PC7 4 &pcfg_pull_none>,
+					<3 RK_PD0 4 &pcfg_pull_none>;
+		};
+	};
+
+	usb {
+		vcc5v0_host_en: vcc5v0-host-en {
+			rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
 };
 
 &pcfg_pull_none {
@@ -96,19 +129,26 @@
 };
 
 &sfc {
-	bootph-all;
-	pinctrl-0 = <&fspim2_pins>;
+	bootph-pre-ram;
+	u-boot,spl-sfc-no-dma;
 	pinctrl-names = "default";
+	pinctrl-0 = <&fspim2_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
 	status = "okay";
 
-	flash0: flash@0 {
-		bootph-all;
+	flash@0 {
+		bootph-pre-ram;
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
+		spi-max-frequency = <24000000>;
 		spi-rx-bus-width = <4>;
 		spi-tx-bus-width = <1>;
 	};
+};
+
+&uart2m0_xfer {
+	bootph-all;
 };
 
 &usb_host0_ehci {
@@ -167,20 +207,4 @@
 &u2phy3_host {
 	phy-supply = <&vcc5v0_host>;
 	status = "okay";
-};
-
-&sfc {
-	bootph-all;
-	pinctrl-0 = <&fspim2_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-
-	flash@0 {
-		bootph-all;
-		compatible = "jedec,spi-nor";
-		reg = <0>;
-		spi-max-frequency = <10000000>;
-		spi-rx-bus-width = <4>;
-		spi-tx-bus-width = <1>;
-	};
 };
