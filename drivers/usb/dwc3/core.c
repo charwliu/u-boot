@@ -146,7 +146,7 @@ static void dwc3_ref_clk_period(struct dwc3 *dwc)
 
 	if (dwc->ref_clk) {
 		rate = clk_get_rate(dwc->ref_clk);
-		if (!rate)
+		if (!rate || (long)rate < 0)
 			return;
 		period = NSEC_PER_SEC / rate;
 	} else {
