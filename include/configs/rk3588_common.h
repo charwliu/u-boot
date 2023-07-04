@@ -7,6 +7,7 @@
 #ifndef __CONFIG_RK3588_COMMON_H
 #define __CONFIG_RK3588_COMMON_H
 
+#include <linux/stringify.h>
 #include "rockchip-common.h"
 
 #define CFG_IRAM_BASE			0xff000000
@@ -31,6 +32,12 @@
 	"partitions=" PARTS_DEFAULT		\
 	ENV_MEM_LAYOUT_SETTINGS			\
 	ROCKCHIP_DEVICE_SETTINGS \
-	"boot_targets=" BOOT_TARGETS "\0"
+	"boot_targets=" BOOT_TARGETS "\0" \
+	"dfu_alt_info=ram ram0=ram ram " \
+		__stringify(CONFIG_SPL_LOAD_FIT_ADDRESS) " " \
+		__stringify(CONFIG_SYS_DFU_DATA_BUF_SIZE) "\0"	\
+	"dfu_alt_info_ram=u-boot.itb ram " \
+		__stringify(CONFIG_SPL_LOAD_FIT_ADDRESS) " " \
+		__stringify(CONFIG_SYS_DFU_DATA_BUF_SIZE)
 
 #endif /* __CONFIG_RK3588_COMMON_H */

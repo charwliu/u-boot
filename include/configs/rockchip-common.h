@@ -11,8 +11,6 @@
 #define CFG_CPUID_OFFSET	0x7
 #endif
 
-#ifndef CONFIG_SPL_BUILD
-
 #define BOOT_TARGETS	"mmc0 mmc1 nvme scsi usb pxe dhcp spi"
 
 #ifdef CONFIG_ARM64
@@ -27,7 +25,5 @@
 	"name=trust,size=4M,uuid=${uuid_gpt_atf};" \
 	"name=boot,size=112M,bootable,uuid=${uuid_gpt_boot};" \
 	"name=rootfs,size=-,uuid="ROOT_UUID
-
-#endif
 
 #endif /* _ROCKCHIP_COMMON_H_ */
