@@ -1718,7 +1718,12 @@ static const struct udevice_id eqos_ids[] = {
 		.data = (ulong)&eqos_imx_config
 	},
 #endif
-
+#if IS_ENABLED(CONFIG_DWC_ETH_QOS_ROCKCHIP)
+	{
+		.compatible = "rockchip,rk3568-gmac",
+		.data = (ulong)&eqos_rockchip_config
+	},
+#endif
 #if IS_ENABLED(CONFIG_DWC_ETH_QOS_QCOM)
 	{
 		.compatible = "qcom,qcs404-ethqos",
@@ -1731,7 +1736,6 @@ static const struct udevice_id eqos_ids[] = {
 		.data = (ulong)&eqos_jh7110_config
 	},
 #endif
-
 	{ }
 };
 
