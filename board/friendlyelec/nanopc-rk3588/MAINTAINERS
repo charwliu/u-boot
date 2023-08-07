@@ -1,0 +1,6 @@
+NANOPI6-RK3588
+M:	Charlie LIU <charwliu@gmail.com>
+S:	Maintained
+F:	board/friendlyelec/nanopi6-rk3588
+F:	include/configs/nanopi6-rk3588
+F:	configs/nanopi6-rk3588_defconfig

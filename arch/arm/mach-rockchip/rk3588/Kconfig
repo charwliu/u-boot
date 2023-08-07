@@ -28,6 +28,46 @@ config TARGET_RK3588_NEU6
 	  IO board and Neu6a needs to mount on top of this IO board in order to
 	  create complete Edgeble Neural Compute Module 6B(Neu6B) IO platform.
 
+config TARGET_NANOPC_RK3588
+        bool "FriendlyElec NanoPC-T6 RK3588 board"
+        select BOARD_LATE_INIT
+        help
+          The NanoPC-T6 (as “T6”) is an open-sourced mini IoT gateway device
+          with two 2.5G and one Gbps Ethernet ports, designed and developed
+          by FriendlyElec.
+
+          There are tree variants depending on the DRAM size and eMMC flash
+          campacity: 4G/8G/16G and 32GB/64GB/256GB.
+
+          Specification:
+
+          Rockchip Rk3588 SoC
+          4x ARM Cortex-A76, 4x ARM Cortex-A55
+          4/8/16GB memory LPDDR4x
+          32GB/64GB/256GB eMMC flash
+          Mali G610MP4 GPU
+          Flash: 32GB/64GB/256GB eMMC, at HS400 mode
+          microSD: support up to SDR104 mode
+          2x 4-lane MIPI CSI, compatible with MIPI V1.2
+          Ethernet: 2x PCIe 2.5G Ethernet
+          4G LTE: one mimiPCIe connector and one microSIM slot
+          Video input:
+            1x Standard HDMI input port, up to 4Kp60
+            2x 4-lane MIPI-CSI, compatible with MIPI V1.2
+          Video output:
+            2x Standard HDMI output ports
+            2x 4-lane MIPI-DSI, compatible with MIPI DPHY 2.0 or CPHY 1.1
+          USB-A: 1x USB 3.0 Type-A
+          USB-C: 1x Full function USB 3.0 Type‑C™, support DP display up to 4Kp60
+          2x HDMI 2.1 output, 1x micro HDMI input
+          2.5 Gbps Ethernet port
+          GPIO:
+            40-pin 2.54mm header connector
+            up to 2x SPIs, 6x UARTs, 1x I2Cs, 8x PWMs, 2x I2Ss, 28x GPIOs
+          M.2 Connectors:
+            one M.2 M-Key connector with PCIe 3.0 x4 for NVMe SSDs up to 2,500 MB/s
+            one M.2 E-key connector with PCIe 2.1 x1 and USB2.0 Host
+
 config TARGET_ROCK5A_RK3588
 	bool "Radxa ROCK5A RK3588 board"
 	select BOARD_LATE_INIT
@@ -96,5 +136,6 @@ source board/edgeble/neural-compute-module-6/Kconfig
 source board/rockchip/evb_rk3588/Kconfig
 source board/radxa/rock5a-rk3588s/Kconfig
 source board/radxa/rock5b-rk3588/Kconfig
+source board/friendlyelec/nanopc-rk3588/Kconfig
 
 endif
