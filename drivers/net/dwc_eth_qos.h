@@ -274,7 +274,6 @@ struct eqos_priv {
 	unsigned int desc_per_cacheline;
 	void *tx_dma_buf;
 	void *rx_dma_buf;
-	void *rx_pkt;
 	bool started;
 	bool reg_access_ok;
 	bool clk_ck_enabled;
