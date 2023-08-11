@@ -589,7 +589,7 @@ static efi_status_t bootefi_test_prepare
 	if (!bootefi_device_path)
 		return EFI_OUT_OF_RESOURCES;
 
-	bootefi_image_path = efi_dp_from_file(NULL, 0, path);
+	bootefi_image_path = efi_dp_from_file(NULL, path);
 	if (!bootefi_image_path) {
 		ret = EFI_OUT_OF_RESOURCES;
 		goto failure;
@@ -604,20 +604,6 @@ static efi_status_t bootefi_test_prepare
 failure:
 	efi_clear_bootdev();
 	return ret;
-}
-
-/**
- * bootefi_run_finish() - finish up after running an EFI test
- *
- * @loaded_image_info: Pointer to a struct which holds the loaded image info
- * @image_obj: Pointer to a struct which holds the loaded image object
- */
-static void bootefi_run_finish(struct efi_loaded_image_obj *image_obj,
-			       struct efi_loaded_image *loaded_image_info)
-{
-	efi_restore_gd();
-	free(loaded_image_info->load_options);
-	efi_delete_handle(&image_obj->header);
 }
 
 /**
@@ -638,7 +624,12 @@ static int do_efi_selftest(void)
 
 	/* Execute the test */
 	ret = EFI_CALL(efi_selftest(&image_obj->header, &systab));
-	bootefi_run_finish(image_obj, loaded_image_info);
+	efi_restore_gd();
+	free(loaded_image_info->load_options);
+	if (ret != EFI_SUCCESS)
+		efi_delete_handle(&image_obj->header);
+	else
+		ret = efi_delete_handle(&image_obj->header);
 
 	return ret != EFI_SUCCESS;
 }

@@ -96,6 +96,8 @@
 
 		theme {
 			font-size = <30>;
+			menu-inset = <3>;
+			menuitem-gap-y = <1>;
 		};
 
 		/*
@@ -137,6 +139,15 @@
 			version-offset = <0xdffe00>;
 			version-size = <0x100>;
 		};
+	};
+
+	cedit: cedit {
+	};
+
+	cedit-theme {
+		font-size = <30>;
+		menu-inset = <3>;
+		menuitem-gap-y = <1>;
 	};
 
 	fuzzing-engine {
@@ -344,7 +355,7 @@
 				vsync-len = <13>;
 			};
 		};
-		panel-timings {
+		panel-timing {
 			clock-frequency = <6500000>;
 			hactive = <240>;
 			vactive = <320>;
@@ -1820,6 +1831,14 @@
 	extcon {
 		compatible = "sandbox,extcon";
 	};
+
+	arm-ffa-emul {
+		compatible = "sandbox,arm-ffa-emul";
+
+		sandbox-arm-ffa {
+				compatible = "sandbox,arm-ffa";
+		};
+	};
 };
 
 #include "sandbox_pmic.dtsi"
@@ -1828,3 +1847,5 @@
 #ifdef CONFIG_SANDBOX_VPL
 #include "sandbox_vpl.dtsi"
 #endif
+
+#include "cedit.dtsi"

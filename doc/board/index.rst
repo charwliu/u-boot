@@ -32,6 +32,7 @@ Board-specific doc
    nokia/index
    nxp/index
    openpiton/index
+   phytec/index
    purism/index
    qualcomm/index
    renesas/index
@@ -45,6 +46,7 @@ Board-specific doc
    starfive/index
    ste/index
    tbs/index
+   thead/index
    ti/index
    toradex/index
    variscite/index

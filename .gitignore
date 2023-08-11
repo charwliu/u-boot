@@ -54,6 +54,7 @@ fit-dtb.blob*
 #
 !.gitignore
 !.mailmap
+!.get_maintainer.*
 
 #
 # Generated files

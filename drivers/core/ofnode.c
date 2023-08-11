@@ -12,6 +12,7 @@
 #include <fdt_support.h>
 #include <log.h>
 #include <malloc.h>
+#include <of_live.h>
 #include <linux/libfdt.h>
 #include <dm/of_access.h>
 #include <dm/of_addr.h>
@@ -51,6 +52,20 @@ static oftree oftree_ensure(void *fdt)
 	oftree tree;
 	int i;
 
+	if (of_live_active()) {
+		struct device_node *root;
+		int ret;
+
+		ret = unflatten_device_tree(fdt, &root);
+		if (ret) {
+			log_err("Failed to create live tree: err=%d\n", ret);
+			return oftree_null();
+		}
+		tree = oftree_from_np(root);
+
+		return tree;
+	}
+
 	if (gd->flags & GD_FLG_RELOC) {
 		i = oftree_find(fdt);
 		if (i == -1) {
@@ -67,7 +82,7 @@ static oftree oftree_ensure(void *fdt)
 		}
 	} else {
 		if (fdt != gd->fdt_blob) {
-			log_debug("Cannot only access control FDT before relocation\n");
+			log_debug("Only the control FDT can be accessed before relocation\n");
 			return oftree_null();
 		}
 	}
@@ -75,6 +90,12 @@ static oftree oftree_ensure(void *fdt)
 	tree.fdt = fdt;
 
 	return tree;
+}
+
+void oftree_dispose(oftree tree)
+{
+	if (of_live_active())
+		of_live_free(tree.np);
 }
 
 void *ofnode_lookup_fdt(ofnode node)
@@ -133,6 +154,10 @@ oftree oftree_from_fdt(void *fdt)
 	if (CONFIG_IS_ENABLED(OFNODE_MULTI_TREE))
 		return oftree_ensure(fdt);
 
+#ifdef OF_CHECKS
+	if (of_live_active())
+		return oftree_null();
+#endif
 	tree.fdt = fdt;
 
 	return tree;
@@ -998,7 +1023,7 @@ int ofnode_decode_panel_timing(ofnode parent,
 	u32 val = 0;
 	int ret = 0;
 
-	timings = ofnode_find_subnode(parent, "panel-timings");
+	timings = ofnode_find_subnode(parent, "panel-timing");
 	if (!ofnode_valid(timings))
 		return -EINVAL;
 	memset(dt, 0, sizeof(*dt));

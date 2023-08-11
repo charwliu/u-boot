@@ -22,7 +22,7 @@ Two formats for script files exist:
 * Flat Image Tree (FIT)
 
 The benefit of the FIT images is that they can be signed and verifed as
-decribed in :download:`signature.txt <../../uImage.FIT/signature.txt>`.
+described in :doc:`../fit/signature`.
 
 Both formats can be created with the mkimage tool.
 
@@ -161,7 +161,7 @@ The boot scripts (boot.scr) is created with:
 
     mkimage -T script -n 'Test script' -d boot.txt boot.scr
 
-The script can be execute in U-boot like this:
+The script can be execute in U-Boot like this:
 
 .. code-block::
 

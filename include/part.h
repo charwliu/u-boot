@@ -105,7 +105,24 @@ struct blk_desc *blk_get_dev(const char *ifname, int dev);
 
 struct blk_desc *mg_disk_get_dev(int dev);
 
-/* disk/part.c */
+/**
+ * part_get_info_by_type() - Get partitions from a block device using a specific
+ * partition driver
+ *
+ * Each interface allocates its own devices and typically struct blk_desc is
+ * contained with the interface's data structure. There is no global
+ * numbering for block devices, so the interface name must be provided.
+ *
+ * @dev_desc:	Block device descriptor
+ * @part:	Partition number to read
+ * @part_type:	Partition driver to use, or PART_TYPE_UNKNOWN to automatically
+ *		choose a driver
+ * @info:	Returned partition information
+ *
+ * Return: 0 on success, negative errno on failure
+ */
+int part_get_info_by_type(struct blk_desc *dev_desc, int part, int part_type,
+			  struct disk_partition *info);
 int part_get_info(struct blk_desc *dev_desc, int part,
 		  struct disk_partition *info);
 /**
@@ -185,21 +202,6 @@ int blk_get_device_part_str(const char *ifname, const char *dev_part_str,
 			    struct disk_partition *info, int allow_whole_dev);
 
 /**
- * part_get_info_by_name_type() - Search for a partition by name
- *                                for only specified partition type
- *
- * @param dev_desc - block device descriptor
- * @param gpt_name - the specified table entry name
- * @param info - returns the disk partition info
- * @param part_type - only search in partitions of this type
- *
- * Return: - the partition number on match (starting on 1), -1 on no match,
- * otherwise error
- */
-int part_get_info_by_name_type(struct blk_desc *dev_desc, const char *name,
-			       struct disk_partition *info, int part_type);
-
-/**
  * part_get_info_by_name() - Search for a partition by name
  *                           among all available registered partitions
  *
@@ -275,14 +277,6 @@ static inline int blk_get_device_part_str(const char *ifname,
 					  struct disk_partition *info,
 					  int allow_whole_dev)
 { *dev_desc = NULL; return -1; }
-
-static inline int part_get_info_by_name_type(struct blk_desc *dev_desc,
-					     const char *name,
-					     struct disk_partition *info,
-					     int part_type)
-{
-	return -ENOENT;
-}
 
 static inline int part_get_info_by_name(struct blk_desc *dev_desc,
 					const char *name,
@@ -597,6 +591,15 @@ static inline struct part_driver *part_driver_get_first(void)
 {
 	return ll_entry_start(struct part_driver, part_driver);
 }
+
+/**
+ * part_get_type_by_name() - Get partition type by name
+ *
+ * @name: Name of partition type to look up (not case-sensitive)
+ * Returns: Corresponding partition type (PART_TYPE_...) or PART_TYPE_UNKNOWN if
+ * not known
+ */
+int part_get_type_by_name(const char *name);
 
 #else
 static inline int part_driver_get_count(void)

@@ -9,14 +9,17 @@
 #include <asm/armv7_mpu.h>
 #include <asm/hardware.h>
 
-#define J721E  0xbb64
-#define J7200  0xbb6d
-#define K3_BACKGROUND_FIREWALL_BIT BIT(8)
+#define K3_FIREWALL_BACKGROUND_BIT (8)
 
 struct fwl_data {
 	const char *name;
 	u16 fwl_id;
 	u16 regions;
+};
+
+enum k3_firewall_region_type {
+	K3_FIREWALL_REGION_FOREGROUND,
+	K3_FIREWALL_REGION_BACKGROUND
 };
 
 enum k3_device_type {
@@ -41,3 +44,4 @@ enum k3_device_type get_device_type(void);
 void ti_secure_image_post_process(void **p_image, size_t *p_size);
 struct ti_sci_handle *get_ti_sci_handle(void);
 void do_board_detect(void);
+void ti_secure_image_check_binary(void **p_image, size_t *p_size);

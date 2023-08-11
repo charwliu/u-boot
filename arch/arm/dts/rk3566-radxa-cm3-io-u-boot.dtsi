@@ -11,12 +11,13 @@
 	};
 };
 
+&sdhci {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+};
+
 &uart2 {
 	clock-frequency = <24000000>;
 	bootph-all;
 	status = "okay";
-};
-
-&vcc5v0_usb30 {
-	regulator-boot-on;
 };

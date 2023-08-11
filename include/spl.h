@@ -31,6 +31,7 @@ struct legacy_img_hdr;
 struct blk_desc;
 struct legacy_img_hdr;
 struct spl_boot_device;
+enum boot_device;
 
 /*
  * u_boot_first_phase() - check if this is the first U-Boot phase
@@ -525,7 +526,7 @@ void spl_board_prepare_for_linux(void);
 void spl_board_prepare_for_optee(void *fdt);
 void spl_board_prepare_for_boot(void);
 int spl_board_ubi_load_image(u32 boot_device);
-int spl_board_boot_device(u32 boot_device);
+int spl_board_boot_device(enum boot_device boot_dev_spl);
 
 /**
  * spl_board_loader_name() - Return a name for the loader
@@ -672,6 +673,9 @@ int spl_load_image_ext(struct spl_image_info *spl_image,
 int spl_load_image_ext_os(struct spl_image_info *spl_image,
 			  struct spl_boot_device *bootdev,
 			  struct blk_desc *block_dev, int partition);
+int spl_blk_load_image(struct spl_image_info *spl_image,
+		       struct spl_boot_device *bootdev,
+		       enum uclass_id uclass_id, int devnum, int partnum);
 
 /**
  * spl_early_init() - Set up device tree and driver model in SPL if enabled
@@ -870,12 +874,6 @@ void spl_invoke_opensbi(struct spl_image_info *spl_image);
  */
 int board_return_to_bootrom(struct spl_image_info *spl_image,
 			    struct spl_boot_device *bootdev);
-
-/**
- * board_spl_fit_post_load - allow process images after loading finished
- * @fit: Pointer to a valid Flattened Image Tree blob
- */
-void board_spl_fit_post_load(const void *fit);
 
 /**
  * board_spl_fit_size_align - specific size align before processing payload
