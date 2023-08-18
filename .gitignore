@@ -111,3 +111,7 @@ __pycache__
 # moveconfig database
 /moveconfig.db
 /simple-bin*
+/mkimage-in-simple-bin*
+/tools/generated
+/include/autoconf.mk*
+/include/config.h
