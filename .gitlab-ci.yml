@@ -30,26 +30,50 @@ stages:
       fi
 
   script:
-    # download rkbin
-    - git clone --depth 1 -b master ${RKBIN_REPO_URL} $CI_PROJECT_DIR/../rkbin
-
-    # download compilers
-    - mkdir -p $CI_PROJECT_DIR/../toolchain && cd $CI_PROJECT_DIR/../toolchain
-    - wget "https://developer.arm.com/-/media/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz?rev=6750d007ffbf4134b30ea58ea5bf5223&hash=6C7D2A7C9BD409C42077F203DF120385AEEBB3F5" -O arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
-    - tar xf arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
-
-    # prepare PATH
-    - export PATH=$PATH:$CI_PROJECT_DIR/../toolchain/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-linux-gnu/bin
-    - export CROSS_COMPILE=aarch64-none-linux-gnu-
-    - export ARCH=arm64
-    - export BL31=../rkbin/bin/rk35/rk3588_bl31_v1.27.elf
-    - export ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2736MHz_v1.08.bin
-
-    # build
-    - cd $CI_PROJECT_DIR
-    - make rock5b-rk3588_defconfig
-    - make
-    - ../rkbin/tools/boot_merger rock5b-rk3588.ini
+    # If we've been asked to use clang only do one configuration.
+    - export UBOOT_TRAVIS_BUILD_DIR=/tmp/${TEST_PY_BD}
+    - echo BUILD_ENV ${BUILD_ENV}
+    - if [ -n "${BUILD_ENV}" ]; then
+        export ${BUILD_ENV};
+      fi
+    - tools/buildman/buildman -o ${UBOOT_TRAVIS_BUILD_DIR} -w -E -W -e
+        --board ${TEST_PY_BD} ${OVERRIDE}
+    - cp ~/grub_x86.efi $UBOOT_TRAVIS_BUILD_DIR/
+    - cp ~/grub_x64.efi $UBOOT_TRAVIS_BUILD_DIR/
+    - cp /opt/grub/grubriscv64.efi $UBOOT_TRAVIS_BUILD_DIR/grub_riscv64.efi
+    - cp /opt/grub/grubaa64.efi $UBOOT_TRAVIS_BUILD_DIR/grub_arm64.efi
+    - cp /opt/grub/grubarm.efi $UBOOT_TRAVIS_BUILD_DIR/grub_arm.efi
+    # create sdcard / spi-nor images for sifive unleashed using genimage
+    - if [[ "${TEST_PY_BD}" == "sifive_unleashed" ]]; then
+        mkdir -p root;
+        cp ${UBOOT_TRAVIS_BUILD_DIR}/spl/u-boot-spl.bin .;
+        cp ${UBOOT_TRAVIS_BUILD_DIR}/u-boot.itb .;
+        rm -rf tmp;
+        genimage --inputpath . --config board/sifive/unleashed/genimage_sdcard.cfg;
+        cp images/sdcard.img ${UBOOT_TRAVIS_BUILD_DIR}/;
+        rm -rf tmp;
+        genimage --inputpath . --config board/sifive/unleashed/genimage_spi-nor.cfg;
+        cp images/spi-nor.img ${UBOOT_TRAVIS_BUILD_DIR}/;
+      fi
+    - if [[ "${TEST_PY_BD}" == "coreboot" ]]; then
+        wget -O -
+          "https://drive.google.com/uc?id=1uJ2VkUQ8czWFZmhJQ90Tp8V_zrJ6BrBH&export=download" |
+          xz -dc >${UBOOT_TRAVIS_BUILD_DIR}/coreboot.rom;
+        wget -O -
+          "https://drive.google.com/uc?id=149Cz-5SZXHNKpi9xg6R_5XITWohu348y&export=download" >
+          cbfstool;
+        chmod a+x cbfstool;
+        ./cbfstool ${UBOOT_TRAVIS_BUILD_DIR}/coreboot.rom add-flat-binary -f ${UBOOT_TRAVIS_BUILD_DIR}/u-boot.bin -n fallback/payload -c LZMA -l 0x1110000 -e 0x1110000;
+      fi
+    - virtualenv -p /usr/bin/python3 /tmp/venv
+    - . /tmp/venv/bin/activate
+    - pip install -r test/py/requirements.txt
+    # "${var:+"-k $var"}" expands to "" if $var is empty, "-k $var" if not
+    - export PATH=/opt/qemu/bin:/tmp/uboot-test-hooks/bin:${PATH};
+      export PYTHONPATH=/tmp/uboot-test-hooks/py/travis-ci;
+      ./test/py/test.py -ra --bd ${TEST_PY_BD} ${TEST_PY_ID}
+        ${TEST_PY_TEST_SPEC:+"-k ${TEST_PY_TEST_SPEC}"}
+        --build-dir "$UBOOT_TRAVIS_BUILD_DIR"
   artifacts:
     paths:
       - "*.html"
