@@ -1525,9 +1525,9 @@ static int rk8xx_switch_probe(struct udevice *dev)
 
 static int rk8xx_pldo_probe(struct udevice *dev)
 {
-        struct dm_regulator_uclass_platdata *uc_pdata;
+        struct dm_regulator_uclass_plat *uc_pdata;
 
-        uc_pdata = dev_get_uclass_platdata(dev);
+        uc_pdata = dev_get_uclass_plat(dev);
         uc_pdata->type = REGULATOR_TYPE_LDO;
         uc_pdata->mode_count = 0;
 
