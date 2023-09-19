@@ -6,7 +6,6 @@
  * Author: Neil Armstrong <narmstrong@baylibre.com>
  */
 
-#define DEBUG
 #include <common.h>
 #include <asm-generic/io.h>
 #include <dm.h>

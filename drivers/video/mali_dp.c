@@ -4,7 +4,6 @@
  * Author: Liviu Dudau <liviu.dudau@foss.arm.com>
  *
  */
-#define DEBUG
 #include <common.h>
 #include <malloc.h>
 #include <video.h>

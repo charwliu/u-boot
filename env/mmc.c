@@ -3,8 +3,6 @@
  * (C) Copyright 2008-2011 Freescale Semiconductor, Inc.
  */
 
-/* #define DEBUG */
-
 #include <common.h>
 #include <asm/global_data.h>
 

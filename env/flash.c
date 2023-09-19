@@ -7,8 +7,6 @@
  * Andreas Heppel <aheppel@sysgo.de>
  */
 
-/* #define DEBUG */
-
 #include <common.h>
 #include <command.h>
 #include <env.h>

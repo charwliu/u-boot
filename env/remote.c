@@ -3,8 +3,6 @@
  * (C) Copyright 2011-2012 Freescale Semiconductor, Inc.
  */
 
-/* #define DEBUG */
-
 #include <common.h>
 #include <command.h>
 #include <env_internal.h>
