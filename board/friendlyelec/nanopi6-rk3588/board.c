@@ -126,19 +126,32 @@ static void set_board_rev(void)
 }
 #endif
 
+const char* rk3588_nano="rk3588-nano%s.dtb";
+
 void set_dtb_name(void)
 {
 	char info[64] = {0, };
-
 #ifndef CONFIG_ENV_IS_NOWHERE
 	if (env_get_yesno("lockdown") == 1 &&
 		env_get("dtb_name"))
 		return;
 #endif
-
-	snprintf(info, ARRAY_SIZE(info),
-			"rk3588-nanopi6-rev%02x.dtb", get_board_rev());
+	switch (get_board_rev()) {
+                case 0x01:
+		       snprintf(info, ARRAY_SIZE(info), rk3588_nano, "PC-T6");
+			break;
+                case 0x04:
+                case 0x05:
+		       snprintf(info, ARRAY_SIZE(info), rk3588_nano, "pi-r6c");
+			break;
+                case 0x02:
+                case 0x03:
+		default:
+		       snprintf(info, ARRAY_SIZE(info), rk3588_nano, "pi-r6s");
+			break;
+        }
 	env_set("dtb_name", info);
+	printf("dtb_name: %s\n", info);
 }
 
 #ifdef CONFIG_SERIAL_TAG
@@ -165,6 +178,7 @@ int rk_board_late_init(void)
 #ifdef CONFIG_REVISION_TAG
 	set_board_rev();
 #endif
+	set_dtb_name();
 
 #ifdef CONFIG_SILENT_CONSOLE
 	gd->flags &= ~GD_FLG_SILENT;

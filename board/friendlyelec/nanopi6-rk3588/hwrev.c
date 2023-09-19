@@ -102,10 +102,12 @@ const char *get_board_name(void)
 
 	switch (pcb_rev) {
 		case 0x01:
+			return "NanoPC T6";
 		case 0x02:
-			return "NanoPi R6S";
 		case 0x03:
+			return "NanoPi R6S";
 		case 0x04:
+		case 0x05:
 			return "NanoPi R6C";
 		default:
 			return "FriendlyELEC RK3588 board";
