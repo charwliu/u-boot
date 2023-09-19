@@ -108,12 +108,6 @@ config RK8XX_PWRKEY
         help
           This adds a driver for the RK805/816/817 pwrkey support.
 
-config ADC_KEY
-        bool "Enable adc keys support"
-        depends on DM_KEY
-        help
-          This adds a driver for the adc keys support.
-
 config TEGRA_KEYBOARD
 	bool "NVIDIA Tegra internal matrix keyboard controller support"
 	help
