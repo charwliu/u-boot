@@ -2601,7 +2601,7 @@
 		#thermal-sensor-cells = <1>;
 	};
 
-	saradc: adc@fec10000 {
+	saradc: saradc@fec10000 {
 		compatible = "rockchip,rk3588-saradc";
 		reg = <0x0 0xfec10000 0x0 0x10000>;
 		interrupts = <GIC_SPI 398 IRQ_TYPE_LEVEL_HIGH 0>;
