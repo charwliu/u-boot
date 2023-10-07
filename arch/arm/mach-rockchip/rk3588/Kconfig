@@ -68,6 +68,35 @@ config TARGET_NANOPC_RK3588
             one M.2 M-Key connector with PCIe 3.0 x4 for NVMe SSDs up to 2,500 MB/s
             one M.2 E-key connector with PCIe 2.1 x1 and USB2.0 Host
 
+config TARGET_NANOPI_RK3588
+        bool "FriendlyElec NanoPI R6S/R6C rk3588s board"
+        select BOARD_LATE_INIT
+        help
+          The NanoPI-R6S/R6C (as “R6S/R6C”) is an open-sourced mini IoT gateway device
+          with two 2.5G and one Gbps Ethernet ports, designed and developed
+          by FriendlyElec.
+
+          Specification:
+
+          Rockchip Rk3588 SoC
+          4x ARM Cortex-A76, 4x ARM Cortex-A55
+          64-bit 8GB LPDDR4x at 2133Mhz
+          Mali G610MP4 GPU
+          Flash: 32GB eMMC, at HS400 mode
+          microSD: support up to SDR104 mode
+          2x 4-lane MIPI CSI, compatible with MIPI V1.2
+          Ethernet: one Native Gigabit Ethernet, and 2x PCIe 2.5G Ethernet
+          4G LTE: one mimiPCIe connector and one microSIM slot
+          HDMI:
+	    compatible with HDMI2.1, HDMI2.0, and HDMI1.4 operation
+	    support up to 7680x4320@60Hz
+	    Support RGB/YUV(up to 10bit) format
+          USB: one USB 3.0 Type-A and one USB 2.0 Type-A
+          2.5 Gbps Ethernet port
+          GPIO:
+            12-pin 0.5mm FPC connector
+            up to 1x SPIs, up to 3x UARTs, up to 1x I2Cs, up to 2x SPDIF, up to 8x GPIOs
+
 config TARGET_ROCK5A_RK3588
 	bool "Radxa ROCK5A RK3588 board"
 	select BOARD_LATE_INIT
@@ -137,5 +166,6 @@ source board/rockchip/evb_rk3588/Kconfig
 source board/radxa/rock5a-rk3588s/Kconfig
 source board/radxa/rock5b-rk3588/Kconfig
 source board/friendlyelec/nanopc-rk3588/Kconfig
+source board/friendlyelec/nanopi-rk3588s/Kconfig
 
 endif
