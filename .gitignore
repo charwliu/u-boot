@@ -69,7 +69,8 @@ fit-dtb.blob*
 # Generated include files
 #
 include/autoconf.mk*
-/include/config*
+/include/config.h
+/include/config/*
 /include/generated/
 
 # stgit generated dirs
