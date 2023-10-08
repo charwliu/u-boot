@@ -114,6 +114,8 @@ List of mainline supported Rockchip boards:
      - Edgeble Neural Compute Module 6B SoM - Neu6b (neu6b-io-rk3588)
      - Radxa ROCK 5A (rock5a-rk3588s)
      - Radxa ROCK 5B (rock5b-rk3588)
+     - FrinelyElec NanoPC-T6 (nanopc-rk3588)
+     - FrinelyElec NanoPi-R6S/R6C (nanopi-rk3588s)
 
 * rv1108
      - Rockchip Evb-rv1108 (evb-rv1108)

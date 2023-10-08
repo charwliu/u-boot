@@ -10,6 +10,7 @@
 #include <asm/arch-rockchip/bootrom.h>
 #include <asm/arch-rockchip/grf_rk3568.h>
 #include <asm/arch-rockchip/hardware.h>
+#include <asm/arch-rockchip/boot_mode.h>
 #include <dt-bindings/clock/rk3568-cru.h>
 
 #define PMUGRF_BASE			0xfdc20000
@@ -135,3 +136,55 @@ int arch_cpu_init(void)
 #endif
 	return 0;
 }
+
+#ifdef CONFIG_SPL_BUILD
+
+void __weak led_setup(void)
+{
+}
+
+void spl_board_init(void)
+{
+	led_setup();
+
+#if (CONFIG_IS_ENABLED(DM_REGULATOR))
+	/*
+	 * Turning the eMMC and SPI back on (if disabled via the Qseven
+	 * BIOS_ENABLE) signal is done through a always-on regulator).
+	 */
+	if (regulators_enable_boot_on(false))
+		debug("%s: Cannot enable boot on regulator\n", __func__);
+#endif
+
+	setup_boot_mode();
+}
+#endif
+
+#if defined(CONFIG_USB_GADGET)
+#include <usb.h>
+
+#if defined(CONFIG_USB_DWC3_GADGET) && !defined(CONFIG_DM_USB_GADGET)
+#include <dwc3-uboot.h>
+
+static struct dwc3_device dwc3_device_data = {
+	.maximum_speed = USB_SPEED_HIGH,
+	.base = 0xfcc00000,
+	.dr_mode = USB_DR_MODE_PERIPHERAL,
+	.index = 0,
+	.dis_u2_susphy_quirk = 1,
+	.hsphy_mode = USBPHY_INTERFACE_MODE_UTMIW,
+};
+
+int usb_gadget_handle_interrupts(int index)
+{
+	dwc3_uboot_handle_interrupt(0);
+	return 0;
+}
+
+int board_usb_init(int index, enum usb_init_type init)
+{
+	return dwc3_uboot_init(&dwc3_device_data);
+}
+#endif /* CONFIG_USB_DWC3_GADGET */
+
+#endif /* CONFIG_USB_GADGET */

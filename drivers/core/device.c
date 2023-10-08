@@ -7,7 +7,7 @@
  * (C) Copyright 2012
  * Pavel Herrmann <morpheus.ibis@gmail.com>
  */
-
+#define DEBUG
 #include <common.h>
 #include <cpu_func.h>
 #include <event.h>
@@ -92,8 +92,8 @@ static int device_bind_common(struct udevice *parent, const struct driver *drv,
 			if (uc->uc_drv->name && ofnode_valid(node)) {
 				if (!dev_read_alias_seq(dev, &dev->seq_)) {
 					auto_seq = false;
-					log_debug("   - seq=%d\n", dev->seq_);
-					}
+					log_debug("   - seq=%d (%s)\n", dev->seq_, name);
+				}
 			}
 		}
 	}
